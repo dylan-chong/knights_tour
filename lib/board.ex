@@ -6,14 +6,9 @@ defmodule Board do
   @enforce_keys [:width, :height]
   defstruct [:width, :height, map: %{}]
 
-  def put(%Board{width: width, height: height}, x, y, _)
-      when x not in 0..width - 1
-      or y not in 0..height - 1
-  do
-    raise ArgumentError, message: "Position out of bounds: {#{x}, #{y}}"
-  end
-
   def put(board = %Board{}, x, y, item) do
+    require_valid_range(board, x, y)
+
     %Board{board |
       map: board.map |> Map.put(
         {x, y}, item
@@ -21,14 +16,8 @@ defmodule Board do
     }
   end
 
-  def get(%Board{width: width, height: height}, x, y)
-      when x not in 0..width - 1
-      or y not in 0..height - 1
-  do
-    raise ArgumentError, message: "Position out of bounds: {#{x}, #{y}}"
-  end
-
   def get(board = %Board{}, x, y) do
+    require_valid_range(board, x, y)
     board.map[{x, y}]
   end
 
@@ -61,6 +50,17 @@ defmodule Board do
     )
     |> List.insert_at(0, "|")
     |> Enum.join("")
+  end
+
+  defp require_valid_range(%Board{width: width, height: height}, x, y)
+      when x not in 0..width - 1
+      or y not in 0..height - 1
+  do
+    raise ArgumentError, message: "Position out of bounds: {#{x}, #{y}}"
+  end
+
+  defp require_valid_range(_, _, _) do
+    # Range is valid
   end
 
 end
