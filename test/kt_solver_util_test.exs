@@ -18,18 +18,6 @@ defmodule KTSolverUtilTest do
     assert valid_moves == []
   end
 
-  test "is_valid_tour returns true for full tour" do
-    points = for x <- 0..2, y <- 0..2, do: {x, y}
-
-    board = Enum.reduce(
-      points,
-      %Board{width: 3, height: 3},
-      fn {x, y}, b -> Board.put(b, x, y, 0) end
-    )
-
-    assert KTSolverUtil.is_valid_tour(board, points)
-  end
-
   test "is_valid_tour returns false for a tour with a missing point" do
     [_ | points] = for x <- 0..2, y <- 0..2, do: {x, y}
 
@@ -41,4 +29,13 @@ defmodule KTSolverUtilTest do
 
     refute KTSolverUtil.is_valid_tour(board, points)
   end
+
+  test "points_in_range returns true" do
+    assert KTSolverUtil.points_in_range({4, 1}, {6, 0})
+  end
+
+  test "points_in_range returns false" do
+    refute KTSolverUtil.points_in_range({4, 0}, {6, 0})
+  end
+
 end

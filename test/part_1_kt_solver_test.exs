@@ -12,6 +12,29 @@ defmodule Part1KTSolverTest do
     assert KTSolverUtil.is_valid_tour(board, points)
   end
 
-  # TODO NEXT checks solve method for a slightly larger board
+  test "solve returns nil for an impossible-to-solve 2x2 board" do
+    assert Part1KTSolver.solve(%Board{width: 2, height: 2}) == nil
+  end
+
+  test "solve returns nil for an impossible-to-solve 3x3 board" do
+    assert Part1KTSolver.solve(%Board{width: 3, height: 3}) == nil
+  end
+
+  test "solve succeeds for a hack 3x3" do
+    [board: board, points: points] =
+      %Board{width: 3, height: 3}
+      |> Board.put(1, 1, -1)
+      |> Part1KTSolver.solve()
+
+    Board.to_string(board) |> IO.puts
+    assert KTSolverUtil.is_valid_tour(board, points)
+  end
+
+  test "solve succeeds for a 5x5" do
+    [board: board, points: points] =
+      %Board{width: 5, height: 5} |> Part1KTSolver.solve()
+
+    assert KTSolverUtil.is_valid_tour(board, points)
+  end
 
 end

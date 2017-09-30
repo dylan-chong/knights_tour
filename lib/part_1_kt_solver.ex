@@ -6,26 +6,36 @@ defmodule Part1KTSolver do
     # TODO
     # cache =
 
-    board
-    |> Board.empty_points()
-    |> Enum.find_value(
-      fn {x, y} -> solve(board, [], 0, x, y) end
-    )
+    empty_points = board |> Board.empty_points
+    number_empty_points = empty_points |> length
+
+    empty_points
+    |> Enum.find_value(fn {x, y} ->
+      solve(board, [], 0, x, y, number_empty_points)
+    end)
   end
 
-  def solve(board=%Board{}, points, depth, start_x, start_y) do
-    Board.require_valid_point(board, start_x, start_y)
+  defp solve(board=%Board{}, points, depth, x, y, original_empty_points) do
+    # Generate solution in reverse order
+    Board.require_valid_point(board, x, y)
 
-    next_board = Board.put(board, start_x, start_y, depth)
-    next_points = [{start_x, start_y} | points]
+    next_board = Board.put(board, x, y, depth)
+    next_points = [point = {x, y} | points]
 
-    if depth == board.width * board.height - 1 do
+    if depth == original_empty_points - 1 do
       # We have reached the end of the tour
-      [board: next_board, points: next_points]
-      # TODO make sure the end is the start
+      start_point = List.last(next_points)
+
+      if length(next_points) == 1 or
+          KTSolverUtil.points_in_range(start_point, point) do
+        [board: next_board, points: next_points]
+      else
+        # Not a Eulerian tour
+        nil
+      end
     else
       # We haven't reached the end of the tour
-      valid_moves = KTSolverUtil.valid_moves(board, start_x, start_y)
+      valid_moves = KTSolverUtil.valid_moves(board, x, y)
 
       if valid_moves == [] do
         nil # Incomplete tour
@@ -35,8 +45,9 @@ defmodule Part1KTSolver do
           next_board,
           next_points,
           depth + 1,
-          start_x + dx,
-          start_y + dy
+          x + dx,
+          y + dy,
+          original_empty_points
         ) end)
       end
     end
