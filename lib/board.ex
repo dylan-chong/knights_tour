@@ -23,7 +23,7 @@ defmodule Board do
 
   def to_string(board = %Board{}) do
     (
-      for y <- 0..board.width - 1,
+      for y <- 0..board.height - 1,
       do: Enum.join([
         row_to_string(board, y),
         edge_row(board),
