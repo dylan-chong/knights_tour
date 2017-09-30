@@ -10,6 +10,7 @@ defmodule BoardTest do
       |> Board.put(0, 0, :c)
       |> Board.put(7, 7, :d)
       |> Board.to_string
+
     assert is_binary(string)
   end
 
@@ -26,14 +27,14 @@ defmodule BoardTest do
     assert value == :value
   end
 
-  test "put out of range should raise" do
+  test "put invalid point should raise" do
     assert_raise ArgumentError, fn ->
       %Board{width: 8, height: 8}
       |> Board.put(-1, -1, :value)
     end
   end
 
-  test "get out of range should raise" do
+  test "get invalid point should raise" do
     assert_raise ArgumentError, fn ->
       %Board{width: 8, height: 8}
       |> Board.get(-1, -1)

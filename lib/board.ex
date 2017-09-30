@@ -7,7 +7,7 @@ defmodule Board do
   defstruct [:width, :height, map: %{}]
 
   def put(board = %Board{}, x, y, item) do
-    require_valid_range(board, x, y)
+    require_valid_point(board, x, y)
 
     %Board{board |
       map: board.map |> Map.put(
@@ -17,7 +17,7 @@ defmodule Board do
   end
 
   def get(board = %Board{}, x, y) do
-    require_valid_range(board, x, y)
+    require_valid_point(board, x, y)
     board.map[{x, y}]
   end
 
@@ -31,6 +31,23 @@ defmodule Board do
     )
     |> List.insert_at(0, edge_row(board))
     |> Enum.join("\n")
+  end
+
+  def empty_points(board = %Board{}) do
+    for x <- 0..board.width - 1,
+        y <- 0..board.height - 1,
+        Board.get(board, x, y) == nil,
+        do: {x, y}
+  end
+
+  def is_valid_point(%Board{width: width, height: height}, x, y) do
+    x in 0..width - 1 and y in 0..height - 1
+  end
+
+  def require_valid_point(board = %Board{}, x, y) do
+    if not is_valid_point(board, x, y) do
+      raise ArgumentError, message: "Position out of bounds: {#{x}, #{y}}"
+    end
   end
 
   defp edge_row(%Board{width: width}) do
@@ -50,17 +67,6 @@ defmodule Board do
     )
     |> List.insert_at(0, "|")
     |> Enum.join("")
-  end
-
-  defp require_valid_range(%Board{width: width, height: height}, x, y)
-      when x not in 0..width - 1
-      or y not in 0..height - 1
-  do
-    raise ArgumentError, message: "Position out of bounds: {#{x}, #{y}}"
-  end
-
-  defp require_valid_range(_, _, _) do
-    # Range is valid
   end
 
 end
