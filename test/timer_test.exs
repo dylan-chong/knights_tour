@@ -5,20 +5,20 @@ defmodule TimerTest do
   @sleep 50
 
   test "measure/2 should return a reasonable measurement" do
-    measurement = Timer.measure(
+    {time, _} = Timer.measure(
       fn -> nil end,
       fn _ -> :timer.sleep(@sleep) end
     )
-    assert measurement > @sleep
-    assert measurement < @sleep * 10
+    assert time > @sleep
+    assert time < @sleep * 10
   end
 
   test "measure/1 should return a reasonable measurement" do
-    measurement = Timer.measure(
+    {time, _} = Timer.measure(
       fn -> :timer.sleep(@sleep) end
     )
-    assert measurement > @sleep
-    assert measurement < @sleep * 10
+    assert time > @sleep
+    assert time < @sleep * 10
   end
 
 end

@@ -29,11 +29,11 @@ defmodule Part1KTSolverTest do
     assert KTSolverUtil.is_valid_tour(board, points)
   end
 
-  test "solve succeeds for a 5x6" do
-    [board: board, points: points] =
-      %Board{width: 5, height: 6} |> Part1KTSolver.solve()
+  # test "solve succeeds for a 5x6" do
+    # [board: board, points: points] =
+      # %Board{width: 5, height: 6} |> Part1KTSolver.solve()
 
-    assert KTSolverUtil.is_valid_tour(board, points)
-  end
+    # assert KTSolverUtil.is_valid_tour(board, points)
+  # end
 
 end
