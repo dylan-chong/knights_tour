@@ -40,6 +40,22 @@ defmodule Board do
         do: {x, y}
   end
 
+  def empty_bounds(board = %Board{}) do
+    board
+    |> empty_points
+    |> Enum.reduce(
+      {board.width, board.height, 0, 0},
+      fn {x, y}, {left, top, right, bottom} ->
+        {
+          min(left, x),
+          min(top, y),
+          max(right, x + 1),
+          max(bottom, y + 1),
+        }
+      end
+    )
+  end
+
   def is_valid_point(%Board{width: width, height: height}, x, y) do
     x in 0..width - 1 and y in 0..height - 1
   end

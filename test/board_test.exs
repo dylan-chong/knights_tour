@@ -41,4 +41,23 @@ defmodule BoardTest do
     end
   end
 
+  test "empty_bounds finds empty bounds for two squares" do
+    empty_points = [{1, 2}, {2, 4}]
+
+    board =
+      (for x <- 0..3, y <- 0..4, do: {x, y})
+      |> Enum.reduce(
+        %Board{width: 4, height: 5},
+        fn p = {x, y}, b ->
+          if p in empty_points do
+            b
+          else
+            Board.put(b, x, y, 0)
+          end
+        end
+      )
+
+    assert Board.empty_bounds(board) == {1, 2, 3, 5}
+  end
+
 end

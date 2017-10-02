@@ -18,7 +18,7 @@ defmodule Part1KTSolver do
       y,
       number_empty_points,
       cache
-    )
+    ) || :no_closed_tour_found
 
     :ets.delete(cache)
     result
@@ -59,10 +59,10 @@ defmodule Part1KTSolver do
     board,
     points,
     depth,
-    x,
-    y,
+    _x,
+    _y,
     original_empty_points,
-    cache
+    _cache
   ) when depth == original_empty_points - 1 do
     # We have reached the end of the tour
     start_point = List.last(points)
