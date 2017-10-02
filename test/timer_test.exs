@@ -1,5 +1,5 @@
 defmodule TimerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Timer
 
   @sleep 50

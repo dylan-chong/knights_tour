@@ -1,5 +1,5 @@
 defmodule BoardTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Board
 
   test "to_string should not crash" do

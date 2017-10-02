@@ -1,5 +1,5 @@
 defmodule KTSolverUtilTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Board
 
   test "valid_moves when all moves are valid" do
