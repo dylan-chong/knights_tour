@@ -1,11 +1,8 @@
 defmodule Part1KTSolver do
 
-  ## Part1KTSolver.solve(%Board{width: 5, height: 5})[:board] |> Board.to_string |> IO.puts
+  # r = [board: board, points: points] = %Board{width: 5, height: 6} |> Part1KTSolver.solve()
 
   def solve(board = %Board{}) do
-    # TODO
-    # cache =
-
     empty_points = board |> Board.empty_points
     number_empty_points = empty_points |> length
 
@@ -38,19 +35,14 @@ defmodule Part1KTSolver do
     original_empty_points,
     cache
   ) do
-    # t1 = :erlang.system_time / 1.0e3 |> round
     h = hash(board, points)
 
     cache
     |> :ets.lookup(h)
     |> case do
       [{_h, result} | _] ->
-        # t2 = :erlang.system_time / 1.0e3 |> round
-        # IO.puts "C#{t2 - t1}"
         result
       [] ->
-        # t2 = :erlang.system_time / 1.0e3 |> round
-        # IO.puts "C#{t2 - t1}"
         result = solve(
           board,
           points,
@@ -64,8 +56,6 @@ defmodule Part1KTSolver do
         result
     end
   end
-
-  # TODO Tidy print
 
   defp solve(
     board,
@@ -85,7 +75,6 @@ defmodule Part1KTSolver do
       [board: board, points: points]
     else
       # Not a Eulerian tour
-      # IO.write "E"
       nil
     end
   end
@@ -102,10 +91,8 @@ defmodule Part1KTSolver do
     valid_moves = KTSolverUtil.valid_moves(board, x, y)
 
     if valid_moves == [] do
-      # IO.write "D"
       nil # Dead end
     else
-      #IO.inspect {"valid moves", valid_moves}
       valid_moves
       |> Enum.find_value(fn {dx, dy} ->
         next_x = x + dx
@@ -114,7 +101,6 @@ defmodule Part1KTSolver do
         next_board = Board.put(board, next_x, next_y, next_depth)
         next_points = [{next_x, next_y} | points]
 
-        #IO.inspect {"finding another at depth: #{depth}"}
         solve_with_cache(
           next_board,
           next_points,
