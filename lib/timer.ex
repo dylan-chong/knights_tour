@@ -1,5 +1,15 @@
 defmodule Timer do
 
+  def bench(solver, width, height) do
+    bench(solver, %Board{width: width, height: height})
+  end
+
+  def bench(solver, board = %Board{}) do
+    measure(
+      fn -> solver.solve(board) end
+    )
+  end
+
   def measure(prepare_function, work_function) do
     preparation_data = prepare_function.()
 

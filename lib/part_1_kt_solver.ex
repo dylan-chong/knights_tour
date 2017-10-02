@@ -1,7 +1,5 @@
 defmodule Part1KTSolver do
 
-  # r = [board: board, points: points] = %Board{width: 5, height: 6} |> Part1KTSolver.solve()
-
   def solve(board = %Board{}) do
     empty_points = board |> Board.empty_points
     number_empty_points = empty_points |> length
