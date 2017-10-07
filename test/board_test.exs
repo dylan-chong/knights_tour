@@ -41,6 +41,27 @@ defmodule BoardTest do
     end
   end
 
+  test "empty_points returns correct result" do
+    board =
+      %Board{width: 2, height: 3}
+      |> Board.put(1, 0, :a)
+      |> Board.put(0, 1, :b)
+      |> Board.put(1, 2, :c)
+
+    empty_points =
+      board
+      |> Board.empty_points
+      |> MapSet.new
+
+    expected_empty_points = MapSet.new([
+      {0, 0},
+      {1, 1},
+      {0, 2},
+    ])
+
+    assert empty_points == expected_empty_points
+  end
+
   test "empty_bounds finds empty bounds for two squares" do
     empty_points = [{1, 2}, {2, 4}]
 
