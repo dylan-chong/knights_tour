@@ -28,8 +28,11 @@ defmodule Part2KTSolver do
       when depth > original_empty_points - 3, do: true
 
   def can_finish_tour(board, points, _, _) do
-    {start_x, start_y} = List.last(points)
+    start_point = List.last(points)
+    can_return_to_start(board, start_point)
+  end
 
+  defp can_return_to_start(board, {start_x, start_y}) do
     board
     |> KTSolverUtil.valid_moves(start_x, start_y)
     |> case do
@@ -37,12 +40,15 @@ defmodule Part2KTSolver do
         # We have blocked off the path back to the start
         false
       valid_moves ->
-        Enum.any?(valid_moves, fn {x, y} ->
-          board
-          |> KTSolverUtil.valid_moves(x, y)
-          |> length()
-          |> Kernel.>=(1)
-        end)
+        true
+        # Check if there is a valid move to a valid move.
+        # This is faster for skinny boards but slower for square boards
+        # Enum.any?(valid_moves, fn {x, y} ->
+          # board
+          # |> KTSolverUtil.valid_moves(x, y)
+          # |> length()
+          # |> Kernel.>=(1)
+        # end)
     end
   end
 
@@ -113,7 +119,7 @@ defmodule Part2KTSolver do
     else
       # Returns nil when there are no valid moves
       board
-      |> KTSolverUtil.valid_moves(x, y)
+      |> valid_moves(x, y)
       |> Enum.find_value(fn {dx, dy} ->
         next_x = x + dx
         next_y = y + dy
@@ -131,6 +137,22 @@ defmodule Part2KTSolver do
           cache
         )
       end)
+    end
+  end
+
+  defp valid_moves(board, x, y) do
+    moves = KTSolverUtil.valid_moves(board, x, y) |> MapSet.new
+    corners = Board.corner_points(board) |> MapSet.new
+
+    # Array of 0 or 1
+    corner_moves = MapSet.intersection(moves, corners)
+
+    # If we can move to a corner we have to move to it,
+    # otherwise we will block the entrance or exit to the corner.
+    if corner_moves == [] do
+      [corner_moves]
+    else
+      moves
     end
   end
 

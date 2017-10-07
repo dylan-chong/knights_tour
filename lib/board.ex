@@ -56,6 +56,15 @@ defmodule Board do
     )
   end
 
+  def corner_points(board = %Board{}) do
+    [
+      {0, 0},
+      {board.width - 1, 0},
+      {board.width - 1, board.height - 1},
+      {0, board.height - 1},
+    ]
+  end
+
   def is_valid_point(%Board{width: width, height: height}, x, y) do
     x in 0..width - 1 and y in 0..height - 1
   end
