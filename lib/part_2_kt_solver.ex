@@ -10,15 +10,17 @@ defmodule Part2KTSolver do
 
     cache = :ets.new(:cache, [])
 
-    result = solve_with_cache(
-      Board.put(board, x, y, 0),
+    next_board = Board.put(board, x, y, 0)
+    result = do_solve_with_cache({
+      next_board,
       [{x, y}],
       0,
       x,
       y,
       number_empty_points,
-      cache
-    ) || :no_closed_tour_found
+      cache,
+      valid_moves(next_board, x, y)
+    }) || :no_closed_tour_found
 
     :ets.delete(cache)
     result
@@ -51,15 +53,16 @@ defmodule Part2KTSolver do
     end
   end
 
-  defp solve_with_cache(
+  defp do_solve_with_cache(args = {
     board,
     points,
-    depth,
-    x,
-    y,
-    original_empty_points,
-    cache
-  ) do
+    _depth,
+    _x,
+    _y,
+    _original_empty_points,
+    cache,
+    _valid_moves
+  }) do
     h = hash(board, points)
 
     cache
@@ -68,29 +71,22 @@ defmodule Part2KTSolver do
       [{_h, result} | _] ->
         result
       [] ->
-        result = solve(
-          board,
-          points,
-          depth,
-          x,
-          y,
-          original_empty_points,
-          cache
-        )
+        result = do_solve(args)
         :ets.insert(cache, {h, result})
         result
     end
   end
 
-  defp solve(
+  defp do_solve({
     board,
     points,
     depth,
     _x,
     _y,
     original_empty_points,
-    _cache
-  ) when depth == original_empty_points - 1 do
+    _cache,
+    _valid_moves
+  }) when depth == original_empty_points - 1 do
     # We have reached the end of the tour
     start_point = List.last(points)
     last_point = List.first(points)
@@ -104,38 +100,41 @@ defmodule Part2KTSolver do
     end
   end
 
-  defp solve(
+  defp do_solve({
     board,
     points,
     depth,
     x,
     y,
     original_empty_points,
-    cache
-  ) do
+    cache,
+    valid_moves
+  }) do
     if not can_finish_tour(board, points, depth, original_empty_points) do
       nil
     else
       # Returns nil when there are no valid moves
-      board
-      |> valid_moves(x, y)
-      |> Enum.find_value(fn {dx, dy} ->
+      valid_moves
+      |> Stream.map(fn {dx, dy} ->
         next_x = x + dx
         next_y = y + dy
         next_depth = depth + 1
         next_board = Board.put(board, next_x, next_y, next_depth)
         next_points = [{next_x, next_y} | points]
+        next_valid_moves = valid_moves(next_board, next_x, next_y)
 
-        solve_with_cache(
+        {
           next_board,
           next_points,
           next_depth,
           next_x,
           next_y,
           original_empty_points,
-          cache
-        )
+          cache,
+          next_valid_moves
+        }
       end)
+      |> Enum.find_value(&do_solve_with_cache/1)
     end
   end
 
