@@ -115,7 +115,7 @@ defmodule Part2KTSolver do
     else
       # Returns nil when there are no valid moves
       valid_moves
-      |> Stream.map(fn {dx, dy} ->
+      |> Enum.map(fn {dx, dy} ->
         next_x = x + dx
         next_y = y + dy
         next_depth = depth + 1
@@ -123,6 +123,7 @@ defmodule Part2KTSolver do
         next_points = [{next_x, next_y} | points]
         next_valid_moves = valid_moves(next_board, next_x, next_y)
 
+        # Args for do_solve_with_cache
         {
           next_board,
           next_points,
@@ -134,21 +135,25 @@ defmodule Part2KTSolver do
           next_valid_moves
         }
       end)
+      |> Enum.sort_by(fn args ->
+        args |> elem(7) |> length
+      end)
       |> Enum.find_value(&do_solve_with_cache/1)
     end
   end
 
   defp valid_moves(board, x, y) do
-    moves = KTSolverUtil.valid_moves(board, x, y) |> MapSet.new
+    moves = KTSolverUtil.valid_moves(board, x, y)
+    moves_set = moves |> MapSet.new
     corners = Board.corner_points(board) |> MapSet.new
 
     # Array of 0 or 1
-    corner_moves = MapSet.intersection(moves, corners)
+    corner_moves = MapSet.intersection(moves_set, corners)
 
     # If we can move to a corner we have to move to it,
     # otherwise we will block the entrance or exit to the corner.
     if corner_moves == [] do
-      [corner_moves]
+      corner_moves |> MapSet.to_list
     else
       moves
     end
