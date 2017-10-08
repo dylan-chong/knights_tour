@@ -40,15 +40,14 @@ defmodule Part2KTSolver do
         # We have blocked off the path back to the start
         false
       valid_moves ->
-        true
         # Check if there is a valid move to a valid move.
         # This is faster for skinny boards but slower for square boards
-        # Enum.any?(valid_moves, fn {x, y} ->
-          # board
-          # |> KTSolverUtil.valid_moves(x, y)
-          # |> length()
-          # |> Kernel.>=(1)
-        # end)
+        Enum.any?(valid_moves, fn {x, y} ->
+          board
+          |> KTSolverUtil.valid_moves(x, y)
+          |> length()
+          |> Kernel.>=(1)
+        end)
     end
   end
 
