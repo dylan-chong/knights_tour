@@ -5,9 +5,20 @@ defmodule Timer do
   end
 
   def bench(solver, board = %Board{}) do
-    measure(
+    {millis, result} = measure(
       fn -> solver.solve(board) end
     )
+
+    IO.puts "* Duration: #{millis} ms"
+    if result == :no_closed_tour_found do
+      IO.puts "  * Result: :no_closed_tour_found"
+    else
+      IO.puts "  * Result:"
+      result
+      |> Keyword.fetch!(:board)
+      |> Board.to_string
+      |> IO.puts
+    end
   end
 
   def measure(prepare_function, work_function) do
