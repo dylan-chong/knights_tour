@@ -50,23 +50,21 @@ defmodule Part1KTSolverTest do
     assert KTSolverUtil.is_valid_tour(board, points)
   end, do: Solvers.solvers()
 
-  test_with_params "solve succeeds for a 3x10",
-  fn solver ->
-    [board: board, points: points] =
-      %Board{width: 3, height: 10} |> solver.solve()
-
-    board |> Board.to_string |> IO.puts
-    assert KTSolverUtil.is_valid_tour(board, points)
-  end, do: Solvers.solvers()
-
-  # test_with_params "solve succeeds for a 5x6",
+  # test_with_params "solve succeeds for a 3x10",
   # fn solver ->
     # [board: board, points: points] =
-      # %Board{width: 5, height: 6} |> solver.solve()
+      # %Board{width: 3, height: 10} |> solver.solve()
 
-    # board |> Board.to_string |> IO.puts
     # assert KTSolverUtil.is_valid_tour(board, points)
   # end, do: Solvers.solvers()
+
+  test_with_params "solve succeeds for a 6x5",
+  fn solver ->
+    [board: board, points: points] =
+      %Board{width: 6, height: 5} |> solver.solve()
+
+    assert KTSolverUtil.is_valid_tour(board, points)
+  end, do: Solvers.solvers()
 
   test "can_finish_tour returns false when there is no path back" do
     points = [
