@@ -7,7 +7,7 @@ date: \today{}
 
 # Installation
 
-Firstly install Elixir [from here](https://elixir-lang.org/install.html).
+Firstly, install Elixir [from here](https://elixir-lang.org/install.html).
 
 Then unzip the `project.zip` and `cd` into it. From now on I will assume you
 are in the unzipped project folder.
@@ -67,7 +67,7 @@ Hopefully you see something like:
     +-----+-----+-----+
     | 12  | 23  | 8   |
     +-----+-----+-----+
-    | 9 | 14 | 11 |
+    | 9   | 14  | 11  |
     +-----+-----+-----+
 
     {11521.142,
@@ -83,6 +83,11 @@ Hopefully you see something like:
        {0, 5}, {2, 4}, {0, 3}, {1, 1}, {2, 3}, {1, 5}, {0, 7}, {1, 9}, {2, 7},
        {0, 8}, {2, 9}, {1, 7}, {0, 9}, {2, 8}, {1, 6}, {0, 4}, {2, 5}, {1, 3},
        {0, 1}, {2, 0}, {1, 2}, {0, 0}]]}
+
+The table containing the numbers shows the sequence of moves made by the knight
+to complete a closed knight's tour. The data below that shows the object
+representation of the board, and the sequence of point taken (in reverse
+order).
 
 ## Description
 
@@ -116,9 +121,38 @@ To run an example, open up the interactive console:
 
 ### Pruning
 
+These 2 pruning optimisations halved the duration of the cases in Part 1 alone.
+It still was not able to complete square boards overnight (e.g. 6x6).
+
 #### Checking end of path
 
+If we start at the top left corner, then there are only two possible moves
+({+2, +1}, and {+1, +2}). We use up one of them when we leave the corner, so we
+must use the other one we come back at the very end of the closed tour.
+
+We can easily accidentally block off that square any time during the graph
+traversal, so checking this will be able to prune a large number of branches
+early on.
+
+The above solution essentially checks finds a path of size 1 away from the top
+left corner To improve this further, we can check that there is a path of size
+2 that we can take back to the start.
+
 #### Checking corner paths
+
+We can use our knowledge that there are only two possible moves from a corner,
+and that we started only at one of the corners, to further optimise our
+algorithm. There are three corners left that we can consider.
+
+If we encounter a square that can move to an unvisited corner, then we must
+move there. If we don't, then we will have blocked off the only possible exit
+from that corner.
+
+This technique provides a noticeable amount of pruning. A square that can move
+to a corner has up to 6 moves, minus the one that we took to get to that square
+- 5 left. So this technique prunes 4/5 branches for all three corners (this
+excludes the starting corner because the starting corner is visited and we
+start the tour).
 
 #### Warnsdoff rule
 
