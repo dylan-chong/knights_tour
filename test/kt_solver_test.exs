@@ -40,6 +40,14 @@ defmodule Part1KTSolverTest do
     assert solution == :no_closed_tour_found
   end, do: Solvers.solvers()
 
+  test_with_params "solve fails for an impossible 4x5 board",
+  fn solver ->
+    solution =
+      %Board{width: 4, height: 5}
+      |> solver.solve()
+    assert solution == :no_closed_tour_found
+  end, do: Solvers.solvers()
+
   test_with_params "solve succeeds for a hack 3x3",
   fn solver ->
     [board: board, points: points] =
@@ -62,6 +70,14 @@ defmodule Part1KTSolverTest do
   fn solver ->
     [board: board, points: points] =
       %Board{width: 6, height: 5} |> solver.solve()
+
+    assert KTSolverUtil.is_valid_tour(board, points)
+  end, do: Solvers.solvers()
+
+  test_with_params "solve succeeds for a 6x6",
+  fn solver ->
+    [board: board, points: points] =
+      %Board{width: 6, height: 6} |> solver.solve()
 
     assert KTSolverUtil.is_valid_tour(board, points)
   end, do: Solvers.solvers()
