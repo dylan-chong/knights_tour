@@ -37,7 +37,7 @@ compile and optimise the code, rather than compiling onthefly and not
 optimising. Without the `test` argument, the algorithm runs an order of
 magnitude slower. (This is my best guess as to what is happening.)*
 
-Then run the algorithm on the size 3x10:
+Then run the algorithm on the size 3x10 (for example):
 
     Timer.bench_size(Part1KTSolver, 3, 10, true)
 
@@ -91,7 +91,25 @@ order).
 
 ## Description
 
-This is a basic
+This is a basic graph search algorithm. It traverses all of the possible unique
+nodes and finishes once it finds a sequence that is both long enough to be a
+tour, and it is a valid move for a night to move from the last to the first
+point in the sequence.
+
+A node equals another node if the collection of empty squares is equal, and the
+current positions of the knights are equal. When determining uniqueness, we
+don't have to care about the sequence order of how we got to the current
+position: firstly, we know the sequence of points is valid otherwise we would
+not have reached the spot; and secondly, we only care about where we want to go
+next.
+
+There is a cache variable that stores 'hashes' of each node, and the solution
+for it, so that we don't have too recalculate the solution if we have already
+visited an equivalent node. There is no customisable hash map in Elixir/Erlang,
+so there's a hash function that extracts the information we need to determine
+uniqueness (described in the above paragraph) and uses that as a key in the
+cache (which is a map). The 'hash' is unique for each unique node (if it were
+not, then I would have had to use a bag).
 
 ## Benchmarks
 
@@ -99,10 +117,10 @@ This algorithm was able to solve these boards:
 
     |------------|---------------|
     | Board Size | Duration (ms) |
-    |------------|---------------|
-    | 3x10       | 10,861        |
-    | 5x6        | 158,489       |
-    | 6x5        | 352,064       |
+    |------------|--------------:|
+    | 3x10       |         10861 |
+    | 5x6        |        158489 |
+    | 6x5        |        352064 |
     |------------|---------------|
 
 It takes at least many hours to complete any other board sizes (e.g. 6x6) - I
@@ -116,6 +134,10 @@ Part 2 is implemented in file `lib/part_2_kt_solver.ex` - see function
 To run an example, open up the interactive console:
 
     iex -S mix test
+
+Then run the algorithm on the size 3x10 (for example):
+
+    Timer.bench_size(Part2KTSolver, 3, 10, true)
 
 ## Optimisations
 
@@ -156,4 +178,77 @@ start the tour).
 
 #### Warnsdoff rule
 
-See https://en.wikipedia.org/wiki/Knight%27s_tour#Warnsdorf.27s_rule
+See https://en.wikipedia.org/wiki/Knight%27s_tour#Warnsdorf.27s_rule .
+
+This will is a heuristic for best first search. It says that we should search
+the paths where there are fewer possible moves.
+
+I implement this heuristic around line 138. This involves sorting the next
+possible options by how many possible moves each involves.
+
+There are some possible reasons why I think this works so well:
+
+The first possible reason is that by investigating the paths with less options
+first, if that path is not completable, then we are more likely to come to a
+dead end because there are less possible moves available. In contrast, if we
+chose the option with more possible moves, then we are less likely to come to a
+dead end and so we will recurse further.
+
+The second possible reason is that by choosing the option with a less possible
+moves, we end up choosing the trickier path to solve early on. By tricky path,
+an example would be trying to fill the squares along/near the edge of the board
+- in such a case there will be a limited number of possible solutions. By
+trying to solve this early on, we don't attempt to do it many times in the
+future, saving a lot of work.
+
+Please note that the above two paragraphs are only some ideas as to why this
+works.
+
+## Benchmarks
+
+To compare this with the boards that were able to be completed by the
+Part1KTSolver solver, these are the results for both part one and part two.
+
+    |-------|---------------|---------------|
+    | Board | Part1KTSolver | Part2KTSolver |
+    | Size  | Duration (ms) | Duration (ms) |
+    |-------|--------------:|--------------:|
+    | 3x10  | 10861         | 5090          |
+    | 5x6   | 158489        | 7275          |
+    | 6x5   | 352064        | 397           |
+    |-------|---------------|---------------|
+
+For the 3x10 board there is a doubling in speed; for the 5x6, it takes 1/26th
+of the time; and for the 6x5, it takes 1/887th of the time.
+
+This algorithm was able to complete square boards (it was many order of
+magnitudes faster than my previous algorithm).
+
+    |------------|---------------|
+    | Board Size | Duration (ms) |
+    |------------|--------------:|
+    | 6 x 6      |             3 |
+    | 12 x 12    |            25 |
+    | 18 x 18    |           133 |
+    | 24 x 24    |           322 |
+    | 30 x 30    |           913 |
+    | 36 x 36    |          1864 |
+    | 48 x 48    |          6124 |
+    | 54 x 54    |         11201 |
+    | 66 x 66    |         25648 |
+    | 72 x 72    |         37407 |
+    | 78 x 78    |         73297 |
+    | 84 x 84    |         73443 |
+    | 90 x 90    |        103175 |
+    | 96 x 96    |        204998 |
+    |------------|---------------|
+
+
+It's hard to find a metric to precisely compare Part1KTSolver with
+Part2KTSolver.  Part1KTSolver is not able to complete square boards. Both
+algorithms performing differently for differently shaped boards (all of the
+boards in the 1st table have 30 squares on them). And only the second solver
+was able to solve square boards (and very quickly I might add). All I know is
+that the second solver is much, much, much faster than the first.
+
+**TODO graphs for above (when doing part 3)**
