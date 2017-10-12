@@ -209,14 +209,13 @@ works.
 To compare this with the boards that were able to be completed by the
 Part1KTSolver solver, these are the results for both part one and part two.
 
-    |-------|---------------|---------------|
-    | Board | Part1KTSolver | Part2KTSolver |
-    | Size  | Duration (ms) | Duration (ms) |
-    |-------|--------------:|--------------:|
-    | 3x10  | 10861         | 5090          |
-    | 5x6   | 158489        | 7275          |
-    | 6x5   | 352064        | 397           |
-    |-------|---------------|---------------|
+    |------------|-----------------------------|-----------------------------|
+    | Board Size | Part1KTSolver Duration (ms) | Part2KTSolver Duration (ms) |
+    |------------|----------------------------:|----------------------------:|
+    | 3x10       |                       10861 |                        5090 |
+    | 5x6        |                      158489 |                        7275 |
+    | 6x5        |                      352064 |                         397 |
+    |------------|-----------------------------|-----------------------------|
 
 For the 3x10 board there is a doubling in speed; for the 5x6, it takes 1/26th
 of the time; and for the 6x5, it takes 1/887th of the time.
@@ -224,31 +223,39 @@ of the time; and for the 6x5, it takes 1/887th of the time.
 This algorithm was able to complete square boards (it was many order of
 magnitudes faster than my previous algorithm).
 
-    |------------|---------------|
-    | Board Size | Duration (ms) |
-    |------------|--------------:|
-    | 6 x 6      |             3 |
-    | 12 x 12    |            25 |
-    | 18 x 18    |           133 |
-    | 24 x 24    |           322 |
-    | 30 x 30    |           913 |
-    | 36 x 36    |          1864 |
-    | 48 x 48    |          6124 |
-    | 54 x 54    |         11201 |
-    | 66 x 66    |         25648 |
-    | 72 x 72    |         37407 |
-    | 78 x 78    |         73297 |
-    | 84 x 84    |         73443 |
-    | 90 x 90    |        103175 |
-    | 96 x 96    |        204998 |
-    |------------|---------------|
+    |------------|------------------------------|------------------------------|
+    | Board Size | Part1KTSolver Duration (ms)  | Part2KTSolver Duration (ms)  |
+    |------------|------------------------------|------------------------------|
+    | 6 x 6      | Some very long, unknown time | 3                            |
+    | 12 x 12    | Some very long, unknown time | 25                           |
+    | 18 x 18    | Some very long, unknown time | 133                          |
+    | 24 x 24    | Some very long, unknown time | 322                          |
+    | 30 x 30    | Some very long, unknown time | 913                          |
+    | 36 x 36    | Some very long, unknown time | 1864                         |
+    | 42 x 42    | Some very long, unknown time | Some very long, unknown time |
+    | 48 x 48    | Some very long, unknown time | 6124                         |
+    | 54 x 54    | Some very long, unknown time | 11201                        |
+    | 60 x 60    | Some very long, unknown time | Some very long, unknown time |
+    | 66 x 66    | Some very long, unknown time | 25648                        |
+    | 72 x 72    | Some very long, unknown time | 37407                        |
+    | 78 x 78    | Some very long, unknown time | 73297                        |
+    | 84 x 84    | Some very long, unknown time | 73443                        |
+    | 90 x 90    | Some very long, unknown time | 103175                       |
+    | 96 x 96    | Some very long, unknown time | 204998                       |
+    |------------|------------------------------|------------------------------|
 
 
 It's hard to find a metric to precisely compare Part1KTSolver with
-Part2KTSolver.  Part1KTSolver is not able to complete square boards. Both
+Part2KTSolver. Part1KTSolver is not able to complete square boards. Both
 algorithms performing differently for differently shaped boards (all of the
 boards in the 1st table have 30 squares on them). And only the second solver
 was able to solve square boards (and very quickly I might add). All I know is
 that the second solver is much, much, much faster than the first.
 
+Oddly, there were 2 square board that the algorithm could not solve in a few
+hours - n=42 and n=60. I'm not sure why these boards in particular were hard to
+solve.
+
 **TODO graphs for above (when doing part 3)**
+
+# Part 3
