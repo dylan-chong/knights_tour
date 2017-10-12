@@ -14,6 +14,21 @@ defmodule BoardTest do
     assert is_binary(string)
   end
 
+  test "to_string should not crash with custom stringifier" do
+    string =
+      %Board{width: 8, height: 8}
+      |> Board.put(4, 4, {:a})
+      |> Board.put(3, 2, {:b})
+      |> Board.put(0, 0, {:c})
+      |> Board.put(7, 7, {:d})
+      |> Board.to_string(fn
+        nil -> ""
+        cell -> inspect(cell)
+      end)
+
+    assert is_binary(string)
+  end
+
   test "get and put should store and retrieve values" do
     board = %Board{width: 8, height: 8}
 

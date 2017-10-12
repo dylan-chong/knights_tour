@@ -21,11 +21,14 @@ defmodule Board do
     board.map[{x, y}]
   end
 
-  def to_string(board = %Board{}) do
+  def to_string(
+    board = %Board{},
+    stringifier \\ (fn cell -> "#{cell}" end)
+  ) do
     (
       for y <- 0..board.height - 1,
       do: Enum.join([
-        row_to_string(board, y),
+        row_to_string(board, y, stringifier),
         edge_row(board),
       ], "\n")
     )
@@ -81,11 +84,11 @@ defmodule Board do
     |> Enum.join("")
   end
 
-  defp row_to_string(board = %Board{}, y) do
+  defp row_to_string(board = %Board{}, y, stringifier) do
     (
       for x <- 0..board.width - 1,
       do: String.pad_trailing(
-        " #{board |> Board.get(x, y)}",
+        " #{board |> Board.get(x, y) |> stringifier.()}",
         5
       )
       |> Kernel.<>("|")
