@@ -38,4 +38,18 @@ defmodule KTSolverUtilTest do
     refute KTSolverUtil.points_in_range({4, 0}, {6, 0})
   end
 
+  test "points_to_linked_board for simple board" do
+    linked_board = KTSolverUtil.points_to_linked_board([
+      {1, 0},
+      {2, 1},
+      {3, 2},
+    ])
+    expected_board =
+      %Board{width: 4, height: 3}
+      |> Board.put(1, 0, [prev: {3, 2}, next: {2, 1}])
+      |> Board.put(2, 1, [prev: {1, 0}, next: {3, 2}])
+      |> Board.put(3, 2, [prev: {2, 1}, next: {1, 0}])
+    assert expected_board == linked_board
+  end
+
 end

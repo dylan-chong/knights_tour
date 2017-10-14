@@ -33,6 +33,29 @@ defmodule KTSolverUtil do
     end)
   end
 
+  def points_to_linked_board(points = [first | the_rest])
+      when is_list(points) and the_rest != nil do
+    width =
+      points
+      |> Enum.max_by(fn {x, _} -> x end)
+      |> elem(0)
+      |> Kernel.+(1)
+    height =
+      points
+      |> Enum.max_by(fn {_, y} -> y end)
+      |> elem(1)
+      |> Kernel.+(1)
+
+    last = points |> List.last
+    do_points_to_linked_board(
+      %Board{width: width, height: height},
+      last,
+      first,
+      the_rest,
+      first
+    )
+  end
+
   def is_valid_tour(board = %Board{}, points) do
     Board.empty_points(board) == []
     and is_eulerian_tour(board, points)
@@ -44,6 +67,22 @@ defmodule KTSolverUtil do
     [first | _] = points
     last = List.last(points)
     points_in_range(first, last)
+  end
+
+  defp do_points_to_linked_board(
+    board, prev, curr = {x, y}, [], first
+  ) do
+    Board.put(board, x, y, [
+      prev: prev,
+      next: first,
+    ])
+  end
+  defp do_points_to_linked_board(
+    board, prev, curr = {x, y}, [next | points], first
+  ) do
+    board
+    |> Board.put(x, y, [prev: prev, next: next])
+    |> do_points_to_linked_board(curr, next, points, first)
   end
 
 end
