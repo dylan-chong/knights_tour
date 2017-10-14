@@ -2,16 +2,18 @@ defmodule Solvers do
   def solvers do
     [
       # {Part1KTSolver},
-      {Part2KTSolver}
+      # {Part2KTSolver},
+      {Part3KTSolver},
     ]
   end
 end
 
-defmodule Part1KTSolverTest do
+defmodule KTSolverTest do
   use ExUnit.Case, async: true
   use ExUnit.Parameterized
   doctest Part1KTSolver
   doctest Part2KTSolver
+  doctest Part3KTSolver
 
   test_with_params "solve returns single item for tiny board",
   fn solver ->
@@ -40,14 +42,6 @@ defmodule Part1KTSolverTest do
     assert solution == :no_closed_tour_found
   end, do: Solvers.solvers()
 
-  test_with_params "solve fails for an impossible 4x5 board",
-  fn solver ->
-    solution =
-      %Board{width: 4, height: 5}
-      |> solver.solve()
-    assert solution == :no_closed_tour_found
-  end, do: Solvers.solvers()
-
   test_with_params "solve succeeds for a hack 3x3",
   fn solver ->
     [board: board, points: points] =
@@ -66,14 +60,6 @@ defmodule Part1KTSolverTest do
     # assert KTSolverUtil.is_valid_tour(board, points)
   # end, do: Solvers.solvers()
 
-  test_with_params "solve succeeds for a 6x5",
-  fn solver ->
-    [board: board, points: points] =
-      %Board{width: 6, height: 5} |> solver.solve()
-
-    assert KTSolverUtil.is_valid_tour(board, points)
-  end, do: Solvers.solvers()
-
   test_with_params "solve succeeds for a 6x6",
   fn solver ->
     [board: board, points: points] =
@@ -81,6 +67,17 @@ defmodule Part1KTSolverTest do
 
     assert KTSolverUtil.is_valid_tour(board, points)
   end, do: Solvers.solvers()
+
+  test_with_params "solve succeeds for a 6x5",
+  fn solver ->
+    [board: board, points: points] =
+      %Board{width: 6, height: 5} |> solver.solve()
+
+    assert KTSolverUtil.is_valid_tour(board, points)
+  end do
+    Solvers.solvers()
+    |> Enum.filter(fn s -> s != Part3KTSolver end)
+  end
 
   test "can_finish_tour returns false when there is no path back" do
     points = [
@@ -121,6 +118,45 @@ defmodule Part1KTSolverTest do
     )
 
     assert Part2KTSolver.can_finish_tour(board, points, 1, 9)
+  end
+
+  test "split_board returns valid split for 12x12" do
+    expected_sub_boards = MapSet.new [
+      {0, 0, 6, 6},
+      {0, 6, 6, 6},
+      {6, 0, 6, 6},
+      {6, 6, 6, 6},
+    ]
+    sub_boards =
+      Part3KTSolver.split_board(12, 12)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+  test "split_board returns valid split for 12x14" do
+    expected_sub_boards = MapSet.new [
+      {0, 0, 6, 6},
+      {6, 0, 6, 6},
+      {0, 6, 6, 8},
+      {6, 6, 6, 8},
+    ]
+    sub_boards =
+      Part3KTSolver.split_board(12, 14)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+  test "split_board returns valid split for 14x16" do
+    expected_sub_boards = MapSet.new [
+      {0, 0, 6, 8},
+      {6, 0, 8, 8},
+      {0, 8, 6, 8},
+      {6, 8, 8, 8},
+    ]
+    sub_boards =
+      Part3KTSolver.split_board(14, 16)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
   end
 
 end
