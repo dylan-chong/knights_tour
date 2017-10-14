@@ -159,4 +159,25 @@ defmodule KTSolverTest do
     assert expected_sub_boards == sub_boards
   end
 
+  test "split_board returns valid split for 16x18" do
+    expected_sub_boards =
+      Part3KTSolver.four_sub_boards(8, 8, 8, 10)
+      |> MapSet.new
+    sub_boards =
+      Part3KTSolver.split_board(16, 18)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+  test "split_board returns valid split for 18x20" do
+    expected_sub_boards =
+      Part3KTSolver.four_sub_boards(8, 10, 10, 10)
+      |> MapSet.new
+    sub_boards =
+      Part3KTSolver.split_board(18, 20)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+
 end

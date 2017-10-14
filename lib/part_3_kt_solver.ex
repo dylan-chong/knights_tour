@@ -41,7 +41,7 @@ defmodule Part3KTSolver do
     four_sub_boards(w, w, h1, h2)
   end
 
-  defp four_sub_boards(w1, w2, h1, h2) do
+  def four_sub_boards(w1, w2, h1, h2) do
     [
       {0, 0, w1, h1},
       {w1, 0, w2, h1},
