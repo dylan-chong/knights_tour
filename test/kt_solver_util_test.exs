@@ -52,4 +52,16 @@ defmodule KTSolverUtilTest do
     assert expected_board == linked_board
   end
 
+  test "linked_board_with_nums does not crash" do
+    board =
+      Part2KTSolver.solve(%Board{width: 6, height: 6})
+      |> Keyword.fetch!(:points)
+      |> KTSolverUtil.points_to_linked_board
+      |> KTSolverUtil.linked_board_with_nums
+    board
+    # |> Board.to_string(fn c -> c[:num] end)
+    |> Board.to_string(&inspect/1, 38)
+    # |> IO.puts
+  end
+
 end

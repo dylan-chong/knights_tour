@@ -23,16 +23,17 @@ defmodule Board do
 
   def to_string(
     board = %Board{},
-    stringifier \\ (fn cell -> "#{cell}" end)
+    stringifier \\ (fn cell -> "#{cell}" end),
+    cell_width \\ 5
   ) do
     (
       for y <- 0..board.height - 1,
       do: Enum.join([
-        row_to_string(board, y, stringifier),
-        edge_row(board),
+        row_to_string(board, y, stringifier, cell_width),
+        edge_row(board, cell_width),
       ], "\n")
     )
-    |> List.insert_at(0, edge_row(board))
+    |> List.insert_at(0, edge_row(board, cell_width))
     |> Enum.join("\n")
   end
 
@@ -78,18 +79,20 @@ defmodule Board do
     end
   end
 
-  defp edge_row(%Board{width: width}) do
-    (for _ <- 0..width - 1, do: "-----+")
+  defp edge_row(%Board{width: width}, cell_width) do
+    (for _ <- 0..width - 1 do
+      String.pad_leading("+", cell_width + 1, "-")
+    end)
     |> List.insert_at(0, "+")
     |> Enum.join("")
   end
 
-  defp row_to_string(board = %Board{}, y, stringifier) do
+  defp row_to_string(board = %Board{}, y, stringifier, cell_width) do
     (
       for x <- 0..board.width - 1,
       do: String.pad_trailing(
         " #{board |> Board.get(x, y) |> stringifier.()}",
-        5
+        cell_width
       )
       |> Kernel.<>("|")
     )

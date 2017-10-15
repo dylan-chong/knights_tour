@@ -15,7 +15,7 @@ defmodule Part3KTSolver do
       or Integer.is_odd(width)
       or Integer.is_odd(height)
       or width < 10
-      or height < 12
+      or height < 10
       or height - width not in [0, 2],
     do: raise ArgumentError, "Invalid board of w: #{width}, h: #{height}"
   def split_board(width, height) when width == height do
@@ -40,6 +40,7 @@ defmodule Part3KTSolver do
     h2 = Integer.floor_div(height, 2) + 1
     four_sub_boards(w, w, h1, h2)
   end
+
   def four_sub_boards(w1, w2, h1, h2) do
     [
       {0, 0, w1, h1},

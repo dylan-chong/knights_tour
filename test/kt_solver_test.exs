@@ -48,7 +48,6 @@ defmodule KTSolverTest do
       %Board{width: 3, height: 3}
       |> Board.put(1, 1, -1)
       |> solver.solve()
-
     assert KTSolverUtil.is_valid_tour(board, points)
   end, do: Solvers.solvers()
 
@@ -185,6 +184,5 @@ defmodule KTSolverTest do
       |> MapSet.new
     assert expected_sub_boards == sub_boards
   end
-
 
 end

@@ -61,6 +61,21 @@ defmodule KTSolverUtil do
     and is_eulerian_tour(board, points)
   end
 
+  def linked_board_with_nums(
+    board,
+    {x, y} \\ {0, 0},
+    depth \\ 0
+  ) do
+    cell = Board.get(board, x, y)
+    if cell[:num] do
+      board
+    else
+      board
+      |> Board.put(x, y, Keyword.put(cell, :num, depth))
+      |> linked_board_with_nums(cell[:next], depth + 1)
+    end
+  end
+
   defp is_eulerian_tour(_, []), do: true
   defp is_eulerian_tour(_, [_]), do: true
   defp is_eulerian_tour(board, points) do
