@@ -21,6 +21,10 @@ defmodule Board do
     board.map[{x, y}]
   end
 
+  def all_points(board) do
+    Map.keys(board.map)
+  end
+
   def to_string(
     board = %Board{},
     stringifier \\ (fn cell -> "#{cell}" end),
