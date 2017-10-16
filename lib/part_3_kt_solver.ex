@@ -5,9 +5,26 @@ defmodule Part3KTSolver do
       when width != height do
     raise ArgumentError, "Board is not square #{inspect board}"
   end
+  def solve(board = %Board{width: width, height: height})
+      when width < 10 and height < 12 do
+    HardCodedBoards.for_size(width, height)
+  end
+  def solve(board = %Board{width: width, height: height}) do
+    split_board(width, height)
+    |> Enum.map(&xywh_to_solved_board/1)
+    |> join_boards
+  end
 
-  def solve(board = %Board{}) do
-    :no_closed_tour_found
+  defp xywh_to_solved_board(xywh = {_, _, width, height}) do
+    sub_board =
+      %Board{width: width, height: height}
+      |> Part3KTSolver.solve()
+    {xywh, sub_board}
+  end
+
+  def join_boards(boards) do
+    # {xywh, sub_board}
+    [top_left, top_right, bottom_left, bottom_right] = boards
   end
 
   def split_board(width, height)
@@ -15,7 +32,7 @@ defmodule Part3KTSolver do
       or Integer.is_odd(width)
       or Integer.is_odd(height)
       or width < 10
-      or height < 10
+      or height < 12
       or height - width not in [0, 2],
     do: raise ArgumentError, "Invalid board of w: #{width}, h: #{height}"
   def split_board(width, height) when width == height do

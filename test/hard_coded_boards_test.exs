@@ -9,7 +9,7 @@ defmodule HardCodedBoardsTest do
   test "for_size is valid for all sizes" do
     HardCodedBoards.all
     |> Map.keys
-    |> Enum.each(&HardCodedBoards.for_size/1)
+    |> Enum.each(&assert_valid_size/1)
   end
 
   defp assert_valid_size(size) do
@@ -17,6 +17,11 @@ defmodule HardCodedBoardsTest do
       HardCodedBoards.for_size(size)
       |> KTSolverUtil.points_to_linked_board
       |> KTSolverUtil.linked_board_with_nums
+
+    # IO.puts ""
+    # board
+    # |> Board.to_string(fn cell -> cell[:num] end)
+    # |> IO.puts
 
     board
     |> Board.all_points
