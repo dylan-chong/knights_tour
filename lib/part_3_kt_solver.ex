@@ -18,7 +18,7 @@ defmodule Part3KTSolver do
   end
 
   defp do_solve(%Board{width: width, height: height})
-      when width < 10 and height < 12 do
+      when width <= 10 and height <= 12 do
     {width, height}
     |> HardCodedBoards.for_size
     |> KTSolverUtil.points_to_linked_board
@@ -57,7 +57,7 @@ defmodule Part3KTSolver do
       width: tl_board.width + tr_board.width,
       height: tl_board.height + bl_board.height,
     }
-    # TODO after get this working
+    # TODO NEXT get this working
     # |> Enum.reduce(
       # %Board{
         # width: tl_rect.w + tr_rect.w,

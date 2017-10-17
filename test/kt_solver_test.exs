@@ -16,6 +16,10 @@ defmodule Solvers do
       {10, 12},
       {12, 12},
       {12, 14},
+      {14, 14},
+      {14, 16},
+      {16, 16},
+      {100, 100},
     ]
     |> Enum.map(&size_to_description/1)
   end
