@@ -27,7 +27,7 @@ defmodule Part3KTSolver do
     split_board(width, height)
     |> Enum.map(&Rectangle.of/1)
     |> Enum.map(&rectangle_to_solved_board/1)
-    |> join_boards
+    |> join_and_connect_boards
   end
 
   defp rectangle_to_solved_board(r = %Rectangle{}) do
@@ -37,48 +37,86 @@ defmodule Part3KTSolver do
     |> KTSolverUtil.remove_nums
   end
 
-  defp join_boards(boards) do
-    # [tl_board, tr_board, bl_board, br_board] = boards
-    tl_board = hd(boards)
+  defp join_and_connect_boards(boards) do
+    anchor_points = make_anchor_points(hd(boards))
+    joined_board = join_boards(boards)
 
-    # anchor_points = make_anchor_points(tl_board)
-    w1 = tl_board.width
-    h1 = tl_board.height
-    anchor_points = [
-      [board_index: 0, point: tl_1 = {w1 - 3, h1 - 1}],
-      [board_index: 0, point: tl_2 = {w1 - 1, h1 - 2}],
-      [board_index: 1, point: tr_1 = {w1 + 1, h1 - 3}],
-      [board_index: 1, point: tr_2 = {w1, h1 - 1}],
-      [board_index: 3, point: br_1 = {w1 + 2, h1}],
-      [board_index: 3, point: br_2 = {w1, h1 + 1}],
-      [board_index: 2, point: bl_1 = {w1 - 2, h1 + 2}],
-      [board_index: 2, point: bl_2 = {w1 - 1, h1}],
-    ]
-
-    disconnected_boards = Enum.reduce(
+    disconnected_joined_board = Enum.reduce(
       anchor_points,
-      boards,
-      fn ([board_index: bi, point: {x, y}], current_boards) ->
-        updated_target_board =
-          current_boards
-          |> Enum.at(bi)
-          |> disconnect_point(x, y, anchor_points)
-
-        current_boards
-        |> List.replace_at(bi, {x, y}, updated_target_board)
+      joined_board,
+      fn ({x, y}, board) ->
+        disconnect_point(board, x, y, anchor_points)
       end
     )
 
-    # %Board{
-      # width: tl_board.width + tr_board.width,
-      # height: tl_board.height + bl_board.height,
-    # }
-    # TODO NEXT get this working
+    # TODO NEXT get rejoin working
+  end
+
+  defp join_boards(boards = [tl_board, tr_board, bl_board, br_board]) do
+    empty_joined_board = %Board{
+      width: tl_board.width + tr_board.width,
+      height: tl_board.height + bl_board.height,
+    }
+
+    w1 = tl_board.width
+    h1 = tl_board.height
+
+    make_translator = fn ({dx, dy}) ->
+      fn {{x, y}, cell} ->
+        do_translate = fn {xx, yy} -> {xx + dx, y + dy} end
+        {
+          do_translate({x, y}),
+          cell
+          |> Keyword.replace(:prev, do_translate(cell[:prev]))
+          |> Keyword.replace(:next, do_translate(cell[:next]))
+        }
+      end
+    end
+
+    [
+      tl_board
+      |> Board.all_points_to_cells
+      |> Stream.map(&(&1)),
+
+      tr_board
+      |> Board.all_points_to_cells
+      |> Stream.map(make_translator(x + tl_board.width, y)),
+
+      br_board
+      |> Board.all_points_to_cells
+      |> Stream.map(make_translator(x + tl_board.width, y + tl_board.height)),
+
+      bl_board
+      |> Board.all_points_to_cells
+      |> Stream.map(make_translator(x, y + tl_board.height)),
+    ]
+    |> Stream.flat_map(&(&1))
+    |> Enum.reduce(
+      empty_joined_board,
+      fn ({{x, y}, cell}, board) ->
+        Board.put(board, x, y, cell)
+      end
+    )
   end
 
   @doc "Points used for joining, clockwise order"
   defp make_anchor_points(tl_board) do
-    # TODO ?
+    w1 = tl_board.width
+    h1 = tl_board.height
+    [
+      # tl
+      {w1 - 3, h1 - 1},
+      {w1 - 1, h1 - 2},
+      # tr
+      {w1 + 1, h1 - 3},
+      {w1, h1 - 1},
+      # br
+      {w1 + 2, h1},
+      {w1, h1 + 1},
+      # bl
+      {w1 - 2, h1 + 2},
+      {w1 - 1, h1},
+    ]
   end
 
   defp disconnect_point(board, p = {x, y}, anchor_points) do
