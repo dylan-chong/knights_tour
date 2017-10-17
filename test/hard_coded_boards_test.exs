@@ -17,6 +17,7 @@ defmodule HardCodedBoardsTest do
       HardCodedBoards.for_size(size)
       |> KTSolverUtil.points_to_linked_board
       |> KTSolverUtil.linked_board_with_nums
+      |> Keyword.fetch!(:board)
 
     # IO.puts ""
     # board

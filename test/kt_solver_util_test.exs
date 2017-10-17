@@ -58,6 +58,7 @@ defmodule KTSolverUtilTest do
       |> Keyword.fetch!(:points)
       |> KTSolverUtil.points_to_linked_board
       |> KTSolverUtil.linked_board_with_nums
+      |> Keyword.fetch!(:board)
 
     board
     |> Board.all_points

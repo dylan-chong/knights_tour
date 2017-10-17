@@ -6,6 +6,26 @@ defmodule Solvers do
       {Part3KTSolver},
     ]
   end
+
+  def part_3_boards do
+    [
+      {6, 8},
+      {8, 8},
+      {8, 10},
+      {10, 10},
+      {10, 12},
+      {12, 12},
+      {12, 14},
+    ]
+    |> Enum.map(&size_to_description/1)
+  end
+
+  defp size_to_description(size = {w, h}) do
+    {
+      "%Board{width: #{w}, height: #{h}}" |> String.to_atom,
+      size
+    }
+  end
 end
 
 defmodule KTSolverTest do
@@ -24,7 +44,10 @@ defmodule KTSolverTest do
     assert board |> Board.get(0, 0) == 0
     assert points == [{0, 0}]
     assert KTSolverUtil.is_valid_tour(board, points)
-  end, do: Solvers.solvers()
+  end do
+    Solvers.solvers()
+    |> Enum.filter(fn s -> s != {Part3KTSolver} end)
+  end
 
   test_with_params "solve fails for an impossible 2x2 board",
   fn solver ->
@@ -32,7 +55,10 @@ defmodule KTSolverTest do
       %Board{width: 2, height: 2}
       |> solver.solve()
     assert solution == :no_closed_tour_found
-  end, do: Solvers.solvers()
+  end do
+    Solvers.solvers()
+    |> Enum.filter(fn s -> s != {Part3KTSolver} end)
+  end
 
   test_with_params "solve fails for an impossible 3x3 board",
   fn solver ->
@@ -40,7 +66,10 @@ defmodule KTSolverTest do
       %Board{width: 3, height: 3}
       |> solver.solve()
     assert solution == :no_closed_tour_found
-  end, do: Solvers.solvers()
+  end do
+    Solvers.solvers()
+    |> Enum.filter(fn s -> s != {Part3KTSolver} end)
+  end
 
   test_with_params "solve succeeds for a hack 3x3",
   fn solver ->
@@ -49,7 +78,10 @@ defmodule KTSolverTest do
       |> Board.put(1, 1, -1)
       |> solver.solve()
     assert KTSolverUtil.is_valid_tour(board, points)
-  end, do: Solvers.solvers()
+  end do
+    Solvers.solvers()
+    |> Enum.filter(fn s -> s != {Part3KTSolver} end)
+  end
 
   # test_with_params "solve succeeds for a 3x10",
   # fn solver ->
@@ -75,7 +107,7 @@ defmodule KTSolverTest do
     assert KTSolverUtil.is_valid_tour(board, points)
   end do
     Solvers.solvers()
-    |> Enum.filter(fn s -> s != Part3KTSolver end)
+    |> Enum.filter(fn s -> s != {Part3KTSolver} end)
   end
 
   test_with_params "solve succeeds for a 6x8",
@@ -85,6 +117,16 @@ defmodule KTSolverTest do
 
     assert KTSolverUtil.is_valid_tour(board, points)
   end, do: Solvers.solvers()
+
+  test_with_params "Part3KTSolver.solve succeeds for",
+  fn width, height ->
+    [board: board, points: points] =
+      %Board{width: width, height: height}
+      |> Part3KTSolver.solve()
+
+    assert KTSolverUtil.is_valid_tour(board, points)
+  end, do: Solvers.part_3_boards
+
   test "can_finish_tour returns false when there is no path back" do
     points = [
       # x--

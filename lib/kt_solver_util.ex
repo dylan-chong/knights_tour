@@ -64,16 +64,33 @@ defmodule KTSolverUtil do
   def linked_board_with_nums(
     board,
     {x, y} \\ {0, 0},
-    depth \\ 0
+    depth \\ 0,
+    points \\ []
   ) do
     cell = Board.get(board, x, y)
     if cell[:num] do
-      board
+      [board: board, points: points]
     else
       board
       |> Board.put(x, y, Keyword.put(cell, :num, depth))
-      |> linked_board_with_nums(cell[:next], depth + 1)
+      |> linked_board_with_nums(
+        cell[:next],
+        depth + 1,
+        [{x, y} | points]
+      )
     end
+  end
+
+  def remove_nums(board) do
+    board
+    |> Board.all_points
+    |> Enum.reduce(board, fn {x, y}, current_board ->
+      cell =
+        current_board
+        |> Board.get(x, y)
+        |> Keyword.pop(:num)
+      Board.put(current_board, x, y, cell)
+    end)
   end
 
   defp is_eulerian_tour(_, []), do: true
@@ -85,7 +102,7 @@ defmodule KTSolverUtil do
   end
 
   defp do_points_to_linked_board(
-    board, prev, curr = {x, y}, [], first
+    board, prev, {x, y}, [], first
   ) do
     Board.put(board, x, y, [
       prev: prev,

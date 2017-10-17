@@ -1,31 +1,79 @@
+defmodule Rectangle do
+  # import Part3KTSolver
+  @enforce_keys [:x, :y, :w, :h]
+  defstruct [:x, :y, :w, :h]
+
+  def of({x, y, w, h}) do
+    %Rectangle{x: x, y: y, w: w, h: h}
+  end
+end
+
 defmodule Part3KTSolver do
   require Integer
 
-  def solve(board = %Board{width: width, height: height})
-      when width != height do
-    raise ArgumentError, "Board is not square #{inspect board}"
+  def solve(board = %Board{}) do
+    board
+    |> do_solve
+    |> KTSolverUtil.linked_board_with_nums
   end
-  def solve(board = %Board{width: width, height: height})
+
+  defp do_solve(%Board{width: width, height: height})
       when width < 10 and height < 12 do
-    HardCodedBoards.for_size(width, height)
+    {width, height}
+    |> HardCodedBoards.for_size
+    |> KTSolverUtil.points_to_linked_board
   end
-  def solve(board = %Board{width: width, height: height}) do
+  defp do_solve(%Board{width: width, height: height}) do
     split_board(width, height)
-    |> Enum.map(&xywh_to_solved_board/1)
+    |> Enum.map(&Rectangle.of/1)
+    |> Enum.map(&rectangle_to_solved_board/1)
     |> join_boards
   end
 
-  defp xywh_to_solved_board(xywh = {_, _, width, height}) do
-    sub_board =
-      %Board{width: width, height: height}
-      |> Part3KTSolver.solve()
-    {xywh, sub_board}
+  defp rectangle_to_solved_board(r = %Rectangle{}) do
+    %Board{width: r.w, height: r.h}
+    |> Part3KTSolver.solve
+    |> Keyword.fetch!(:board)
+    |> KTSolverUtil.remove_nums
   end
 
-  def join_boards(boards) do
-    # {xywh, sub_board}
-    [top_left, top_right, bottom_left, bottom_right] = boards
+  defp join_boards(boards) do
+    [tl_board, tr_board, bl_board, br_board] = boards
+
+    # Points used for joining, clockwise order
+    w1 = tl_board.width
+    h1 = tl_board.height
+    points = [
+      tl_1 = {w1 - 3, h1 - 1},
+      tl_2 = {w1 - 1, h1 - 2},
+      tr_1 = {w1 + 1, h1 - 3},
+      tr_2 = {w1, h1 - 1},
+      br_1 = {w1 + 2, h1},
+      br_2 = {w1, h1 + 1},
+      bl_1 = {w1 - 2, h1 + 2},
+      bl_2 = {w1 - 1, h1}
+    ]
+    %Board{
+      width: tl_board.width + tr_board.width,
+      height: tl_board.height + bl_board.height,
+    }
+    # TODO after get this working
+    # |> Enum.reduce(
+      # %Board{
+        # width: tl_rect.w + tr_rect.w,
+        # height: tl_rect.h + bl_rect.h,
+      # },
+      # fn {x, y}, b ->
+        # b |> Board.put(x, y, 1)
+      # end
+    # )
+    # |> Board.to_string
+    # |> IO.puts
   end
+
+  # def connect_points({board_a, board_b}, {ax, ay}, {bx, by}) do
+    # {}
+  # end
 
   def split_board(width, height)
       when width > height
@@ -34,7 +82,8 @@ defmodule Part3KTSolver do
       or width < 10
       or height < 12
       or height - width not in [0, 2],
-    do: raise ArgumentError, "Invalid board of w: #{width}, h: #{height}"
+    do: raise ArgumentError,
+      "Invalid board of w: #{width}, h: #{height}"
   def split_board(width, height) when width == height do
     half_width = round(width / 2)
     half_height = round(height / 2)
@@ -66,5 +115,4 @@ defmodule Part3KTSolver do
       {w1, h1, w2, h2},
     ]
   end
-
 end
