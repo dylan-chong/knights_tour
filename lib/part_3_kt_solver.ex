@@ -38,42 +38,90 @@ defmodule Part3KTSolver do
   end
 
   defp join_boards(boards) do
-    [tl_board, tr_board, bl_board, br_board] = boards
+    # [tl_board, tr_board, bl_board, br_board] = boards
+    tl_board = hd(boards)
 
-    # Points used for joining, clockwise order
+    # anchor_points = make_anchor_points(tl_board)
     w1 = tl_board.width
     h1 = tl_board.height
-    points = [
-      tl_1 = {w1 - 3, h1 - 1},
-      tl_2 = {w1 - 1, h1 - 2},
-      tr_1 = {w1 + 1, h1 - 3},
-      tr_2 = {w1, h1 - 1},
-      br_1 = {w1 + 2, h1},
-      br_2 = {w1, h1 + 1},
-      bl_1 = {w1 - 2, h1 + 2},
-      bl_2 = {w1 - 1, h1}
+    anchor_points = [
+      [board_index: 0, point: tl_1 = {w1 - 3, h1 - 1}],
+      [board_index: 0, point: tl_2 = {w1 - 1, h1 - 2}],
+      [board_index: 1, point: tr_1 = {w1 + 1, h1 - 3}],
+      [board_index: 1, point: tr_2 = {w1, h1 - 1}],
+      [board_index: 3, point: br_1 = {w1 + 2, h1}],
+      [board_index: 3, point: br_2 = {w1, h1 + 1}],
+      [board_index: 2, point: bl_1 = {w1 - 2, h1 + 2}],
+      [board_index: 2, point: bl_2 = {w1 - 1, h1}],
     ]
-    %Board{
-      width: tl_board.width + tr_board.width,
-      height: tl_board.height + bl_board.height,
-    }
+
+    disconnected_boards = Enum.reduce(
+      anchor_points,
+      boards,
+      fn ([board_index: bi, point: {x, y}], current_boards) ->
+        updated_target_board =
+          current_boards
+          |> Enum.at(bi)
+          |> disconnect_point(x, y, anchor_points)
+
+        current_boards
+        |> List.replace_at(bi, {x, y}, updated_target_board)
+      end
+    )
+
+    # %Board{
+      # width: tl_board.width + tr_board.width,
+      # height: tl_board.height + bl_board.height,
+    # }
     # TODO NEXT get this working
-    # |> Enum.reduce(
-      # %Board{
-        # width: tl_rect.w + tr_rect.w,
-        # height: tl_rect.h + bl_rect.h,
-      # },
-      # fn {x, y}, b ->
-        # b |> Board.put(x, y, 1)
-      # end
-    # )
-    # |> Board.to_string
-    # |> IO.puts
   end
 
-  # def connect_points({board_a, board_b}, {ax, ay}, {bx, by}) do
-    # {}
-  # end
+  @doc "Points used for joining, clockwise order"
+  defp make_anchor_points(tl_board) do
+    # TODO ?
+  end
+
+  defp disconnect_point(board, p = {x, y}, anchor_points) do
+    cell = Board.get(board, x, y)
+    {next_px, next_py} = next_p = cell[:next]
+    {prev_px, prev_py} = prev_p = cell[:prev]
+
+    match? = fn (point) ->
+      Enum.any?(
+        anchor_points,
+        fn ([board_index: _, point: point]) ->
+          point == p
+        end
+      )
+    end
+
+    cond do
+      match?(next_p)->
+        next_cell =
+          board
+          |> Board.get(next_px, next_py)
+          |> Keyword.replace(:prev, :to_replace)
+        updated_cell = Keyword.replace(cell, :next, :to_replace)
+
+        board
+        |> Board.put(updated_cell, x, y)
+        |> Board.put(next_cell, next_px, next_py)
+
+      match?(prev_p)->
+        prev_cell =
+          board
+          |> Board.get(prev_px, prev_py)
+          |> Keyword.replace(:next, :to_replace)
+        updated_cell = Keyword.replace(cell, :prev, :to_replace)
+
+        board
+        |> Board.put(updated_cell, x, y)
+        |> Board.put(prev_cell, prev_px, prev_py)
+
+      true ->
+        raise CaseClauseError, "Anchor points must be wrong"
+    end
+  end
 
   def split_board(width, height)
       when width > height
