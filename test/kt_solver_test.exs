@@ -128,6 +128,12 @@ defmodule KTSolverTest do
       %Board{width: width, height: height}
       |> Part3KTSolver.solve()
 
+    # TODO remove
+    board
+#    |> Board.to_string(fn cell -> cell[:num] end)
+    |> Board.to_string(&inspect/1, 44)
+    |> IO.puts
+
     assert KTSolverUtil.is_valid_tour(board, points)
   end, do: Solvers.part_3_boards()
 

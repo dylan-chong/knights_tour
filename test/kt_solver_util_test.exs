@@ -46,9 +46,9 @@ defmodule KTSolverUtilTest do
     ])
     expected_board =
       %Board{width: 4, height: 3}
-      |> Board.put(1, 0, [prev: {3, 2}, next: {2, 1}])
-      |> Board.put(2, 1, [prev: {1, 0}, next: {3, 2}])
-      |> Board.put(3, 2, [prev: {2, 1}, next: {1, 0}])
+      |> Board.put(1, 0, [neighbours: [{3, 2}, {2, 1}]])
+      |> Board.put(2, 1, [neighbours: [{1, 0}, {3, 2}]])
+      |> Board.put(3, 2, [neighbours: [{2, 1}, {1, 0}]])
     assert expected_board == linked_board
   end
 

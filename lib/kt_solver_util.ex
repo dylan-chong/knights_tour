@@ -68,16 +68,28 @@ defmodule KTSolverUtil do
     points \\ []
   ) do
     cell = Board.get(board, x, y)
+    prev = List.first(points) || hd(cell[:neighbours])
+
     if cell[:num] do
       [board: board, points: points]
     else
       board
       |> Board.put(x, y, Keyword.put(cell, :num, depth))
       |> linked_board_with_nums(
-        cell[:next],
+        other_neighbour(cell, prev),
         depth + 1,
         [{x, y} | points]
       )
+    end
+  end
+
+  def other_neighbour(cell, prev) do
+    if prev in cell[:neighbours] do
+      cell[:neighbours]
+      |> List.delete(prev)
+      |> hd
+    else
+      raise ArgumentError, "prev #{prev} is not in cell #{cell}"
     end
   end
 
@@ -105,15 +117,14 @@ defmodule KTSolverUtil do
     board, prev, {x, y}, [], first
   ) do
     Board.put(board, x, y, [
-      prev: prev,
-      next: first,
+      neighbours: [prev, first]
     ])
   end
   defp do_points_to_linked_board(
     board, prev, curr = {x, y}, [next | points], first
   ) do
     board
-    |> Board.put(x, y, [prev: prev, next: next])
+    |> Board.put(x, y, [neighbours: [prev, next]])
     |> do_points_to_linked_board(curr, next, points, first)
   end
 

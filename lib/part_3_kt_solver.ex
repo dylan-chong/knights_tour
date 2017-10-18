@@ -65,36 +65,43 @@ defmodule Part3KTSolver do
     cell_a = Board.get(board, ax, ay)
     cell_b = Board.get(board, bx, by)
 
-    cell_a_key = [:next, :prev] |> Enum.find(fn atom ->
-      cell_a[atom] == :to_replace
-    end)
-    cell_b_key = [:next, :prev] |> Enum.find(fn atom ->
-      cell_b[atom] == :to_replace
-    end)
+    updated_cell_a =
+      cell_a[:neighbours]
+      |> List.delete(:to_replace)
+      |> Kernel.++([pb])
+    updated_cell_b =
+      cell_b[:neighbours]
+      |> List.delete(:to_replace)
+      |> Kernel.++([pa])
 
     board
-    |> Board.put(ax, ay, Keyword.replace(cell_a, cell_a_key, pb) ++ [a: 1])
-    |> Board.put(bx, by, Keyword.replace(cell_b, cell_b_key, pa) ++ [a: 1])
+    |> Board.put(ax, ay, updated_cell_a)
+    |> Board.put(bx, by, updated_cell_b)
   end
 
   defp disconnect_edge(board, pa = {ax, ay}, pb = {bx, by}) do
-    cell_a = Board.get(board, ax, ay)
-    cell_b = Board.get(board, bx, by)
+    updated_cell_a =
+      board
+      |> Board.get(ax, ay)
+      |> List.delete(pb)
+      |> Kernel.++([:to_replace])
+    updated_cell_b =
+      board
+      |> Board.get(bx, by)
+      |> List.delete(pa)
+      |> Kernel.++([:to_replace])
 
-    cond do
-      cell_a[:next] == pb and cell_b[:prev] == pa ->
-        board
-        |> Board.put(ax, ay, Keyword.replace(cell_a, :next, :to_replace))
-        |> Board.put(bx, by, Keyword.replace(cell_b, :prev, :to_replace))
-      cell_a[:prev] == pb and cell_b[:next] == pa ->
-        board
-        |> Board.put(ax, ay, Keyword.replace(cell_a, :prev, :to_replace))
-        |> Board.put(bx, by, Keyword.replace(cell_b, :next, :to_replace))
-      true ->
-        raise ArgumentError, inspect([
-          cell_a: cell_a, cell_b: cell_b, board: board
-        ], limit: :infinity)
+    if length(updated_cell_a) != 2 || length(updated_cell_b) do
+      raise ArgumentError, inspect([
+        updated_cell_a: updated_cell_a,
+        updated_cell_b: updated_cell_b,
+        board: board
+      ], limit: :infinity)
     end
+
+    board
+    |> Board.put(ax, ay, updated_cell_a)
+    |> Board.put(bx, by, updated_cell_a)
   end
 
   defp join_boards([tl_board, tr_board, bl_board, br_board]) do
@@ -108,9 +115,9 @@ defmodule Part3KTSolver do
         do_translate = fn {xx, yy} -> {xx + dx, yy + dy} end
         {
           do_translate.({x, y}),
-          cell
-          |> Keyword.replace(:prev, do_translate.(cell[:prev]))
-          |> Keyword.replace(:next, do_translate.(cell[:next]))
+          Keyword.replace!(cell, :neighbours,
+            cell[:neighbours] |> Enum.map(do_translate)
+          )
         }
       end
     end
