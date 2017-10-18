@@ -2,7 +2,7 @@ defmodule Solvers do
   def solvers do
     [
       # {Part1KTSolver},
-      # {Part2KTSolver},
+      {Part2KTSolver},
       {Part3KTSolver},
     ]
   end
@@ -16,10 +16,10 @@ defmodule Solvers do
       {10, 12},
       {12, 12},
       {12, 14},
-      {14, 14},
-      {14, 16},
-      {16, 16},
-      {100, 100},
+      # {14, 14},
+      # {14, 16},
+      # {16, 16},
+      # {100, 100},
     ]
     |> Enum.map(&size_to_description/1)
   end
@@ -237,8 +237,59 @@ defmodule KTSolverTest do
     assert expected_sub_boards == sub_boards
   end
 
+  test "split_board returns valid split for 100x100" do
+    expected_sub_boards =
+      Part3KTSolver.four_sub_boards(50, 50, 50, 50)
+      |> MapSet.new
+    sub_boards =
+      Part3KTSolver.split_board(100, 100)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+  test "split_board returns valid split for 50x50" do
+    expected_sub_boards =
+      Part3KTSolver.four_sub_boards(24, 24, 26, 26)
+      |> MapSet.new
+    sub_boards =
+      Part3KTSolver.split_board(50, 50)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+  test "split_board returns valid split for 14x14" do
+    expected_sub_boards =
+      Part3KTSolver.four_sub_boards(6, 6, 8, 8)
+      |> MapSet.new
+    sub_boards =
+      Part3KTSolver.split_board(14, 14)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
   test "pair_list returns valid pairs" do
     assert Part3KTSolver.pair_list([1, 2, 3, 4]) == [{1, 2}, {3, 4}]
+  end
+
+  test "make_anchor_points looks good (visually)" do
+    Part3KTSolver.make_anchor_points(6, 6)
+    |> Enum.with_index
+    |> Enum.reduce(%Board{width: 12, height: 12}, fn {{x, y}, i}, b ->
+        Board.put(b, x, y, i)
+    end)
+    |> Board.to_string
+    # |> IO.puts # print to test it looks ok
+  end
+
+  test "disconnect_edge disconnects properly on a simple board" do
+    %Board{width: 2, height: 2}
+    |> Board.put(0, 0, [neighbours: [{0, 1}, {1, 0}]])
+    |> Board.put(1, 0, [neighbours: [{0, 0}, {1, 1}]])
+    |> Board.put(1, 1, [neighbours: [{1, 0}, {0, 1}]])
+    |> Board.put(0, 1, [neighbours: [{1, 1}, {0, 0}]])
+    |> Part3KTSolver.disconnect_edge({1, 0}, {1, 1})
+    |> Board.to_string(&inspect/1, 45)
+    # |> IO.puts # print to test it looks ok
   end
 
 end

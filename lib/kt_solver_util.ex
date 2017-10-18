@@ -63,7 +63,7 @@ defmodule KTSolverUtil do
 
   def linked_board_with_nums(
     board,
-    {x, y} \\ {0, 0},
+    {x, y} \\ {0, 0}, # starting position
     depth \\ 0,
     points \\ []
   ) do

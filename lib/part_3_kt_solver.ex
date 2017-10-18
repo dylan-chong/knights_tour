@@ -38,7 +38,8 @@ defmodule Part3KTSolver do
   end
 
   defp join_and_connect_boards(boards) do
-    anchor_points = make_anchor_points(hd(boards))
+    tl_board = hd(boards)
+    anchor_points = make_anchor_points(tl_board.width, tl_board.height)
     joined_board = join_boards(boards)
 
     disconnected_joined_board =
@@ -62,36 +63,69 @@ defmodule Part3KTSolver do
   end
 
   defp join_edge(board, pa = {ax, ay}, pb = {bx, by}) do
+    if {5, 4} in [pa, pb] do
+      IO.puts ""
+    end
     cell_a = Board.get(board, ax, ay)
     cell_b = Board.get(board, bx, by)
 
-    updated_cell_a =
+    updated_cell_a_neighbours =
       cell_a[:neighbours]
       |> List.delete(:to_replace)
       |> Kernel.++([pb])
-    updated_cell_b =
+    updated_cell_b_neighbours =
       cell_b[:neighbours]
       |> List.delete(:to_replace)
       |> Kernel.++([pa])
 
+    if length(updated_cell_a_neighbours) != 2
+        || length(updated_cell_b_neighbours) != 2
+        || :to_replace in updated_cell_a_neighbours
+        || :to_replace in updated_cell_b_neighbours do
+      raise ArgumentError, inspect([
+        updated_cell_a_neighbours: updated_cell_a_neighbours,
+        updated_cell_b_neighbours: updated_cell_b_neighbours,
+        board: board
+      ], limit: :infinity)
+    end
+
     board
-    |> Board.put(ax, ay, updated_cell_a)
-    |> Board.put(bx, by, updated_cell_b)
+    |> Board.put(
+      ax, ay,
+      cell_a |> Keyword.replace(:neighbours, updated_cell_a_neighbours)
+    )
+    |> Board.put(
+      bx, by,
+      cell_b |> Keyword.replace(:neighbours, updated_cell_b_neighbours)
+    )
   end
 
-  defp disconnect_edge(board, pa = {ax, ay}, pb = {bx, by}) do
-    updated_cell_a =
-      board
-      |> Board.get(ax, ay)
-      |> List.delete(pb)
-      |> Kernel.++([:to_replace])
-    updated_cell_b =
-      board
-      |> Board.get(bx, by)
-      |> List.delete(pa)
-      |> Kernel.++([:to_replace])
+  def disconnect_edge(board, pa = {ax, ay}, pb = {bx, by}) do
+    cell_a = board |> Board.get(ax, ay)
+    cell_b = board |> Board.get(bx, by)
 
-    if length(updated_cell_a) != 2 || length(updated_cell_b) do
+    updated_cell_a = Keyword.replace!(
+      cell_a,
+      :neighbours,
+      updated_cell_a_neighbours =
+        cell_a
+        |> Keyword.fetch!(:neighbours)
+        |> List.delete(pb)
+        |> Kernel.++([:to_replace])
+    )
+
+    updated_cell_b = Keyword.replace!(
+      cell_b,
+      :neighbours,
+      updated_cell_b_neighbours =
+        cell_b
+        |> Keyword.fetch!(:neighbours)
+        |> List.delete(pa)
+        |> Kernel.++([:to_replace])
+    )
+
+    if length(updated_cell_a_neighbours) != 2
+        || length(updated_cell_b_neighbours) != 2 do
       raise ArgumentError, inspect([
         updated_cell_a: updated_cell_a,
         updated_cell_b: updated_cell_b,
@@ -101,7 +135,7 @@ defmodule Part3KTSolver do
 
     board
     |> Board.put(ax, ay, updated_cell_a)
-    |> Board.put(bx, by, updated_cell_a)
+    |> Board.put(bx, by, updated_cell_b)
   end
 
   defp join_boards([tl_board, tr_board, bl_board, br_board]) do
@@ -149,9 +183,9 @@ defmodule Part3KTSolver do
   end
 
   # "Points used for joining, clockwise order"
-  defp make_anchor_points(tl_board) do
-    w1 = tl_board.width
-    h1 = tl_board.height
+  def make_anchor_points(tl_width, tl_height) do
+    w1 = tl_width
+    h1 = tl_height
     [
       # tl
       {w1 - 3, h1 - 1},
@@ -177,11 +211,23 @@ defmodule Part3KTSolver do
       or height - width not in [0, 2],
     do: raise ArgumentError,
       "Invalid board of w: #{width}, h: #{height}"
-  def split_board(width, height) when width == height do
-    half_width = round(width / 2)
-    half_height = round(height / 2)
+  def split_board(width, height)
+      when width == height and rem(width, 4) == 0 do
+    half_width = Integer.floor_div(width, 2)
+    half_height = Integer.floor_div(height, 2)
 
     four_sub_boards(half_width, half_width, half_height, half_height)
+  end
+  def split_board(width, height) when width == height do
+    half_width = Integer.floor_div(width, 2)
+    half_height = Integer.floor_div(height, 2)
+
+    four_sub_boards(
+      half_width - 1,
+      half_width - 1,
+      half_height + 1,
+      half_height + 1
+    )
   end
   def split_board(width, height) when rem(width, 4) > 0 do
     # width / 2 is odd
