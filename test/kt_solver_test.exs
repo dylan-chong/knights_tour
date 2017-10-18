@@ -231,4 +231,8 @@ defmodule KTSolverTest do
     assert expected_sub_boards == sub_boards
   end
 
+  test "pair_list returns valid pairs" do
+    assert Part3KTSolver.pair_list([1, 2, 3, 4]) == [{1, 2}, {3, 4}]
+  end
+
 end

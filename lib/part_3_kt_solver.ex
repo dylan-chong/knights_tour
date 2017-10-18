@@ -41,13 +41,12 @@ defmodule Part3KTSolver do
     anchor_points = make_anchor_points(hd(boards))
     joined_board = join_boards(boards)
 
-    disconnected_joined_board = Enum.reduce(
-      anchor_points,
-      joined_board,
-      fn ({x, y}, board) ->
-        disconnect_point(board, {x, y}, anchor_points)
-      end
-    )
+    disconnected_joined_board =
+      anchor_points
+      |> pair_list
+      |> Enum.reduce(joined_board, fn {ap1, ap2}, board ->
+        disconnect_edge(board, ap1, ap2)
+      end)
 
     reanchor_points(disconnected_joined_board, anchor_points)
   end
@@ -55,45 +54,58 @@ defmodule Part3KTSolver do
   defp reanchor_points(board, anchor_points = [first_anchor | _]) do
     anchor_points
     |> List.delete(first_anchor)
-    |> Kernel.++(first_anchor)
-    |> Enum.unzip
+    |> Kernel.++([first_anchor])
+    |> pair_list
     |> Enum.reduce(board, fn {point_a, point_b}, current_board ->
-      join_end_points(current_board, point_a, point_b)
+      join_edge(current_board, point_a, point_b)
     end)
   end
 
-  defp join_end_points(board, pa = {ax, ay}, pb = {bx, by}) do
+  defp join_edge(board, pa = {ax, ay}, pb = {bx, by}) do
+    cell_a = Board.get(board, ax, ay)
+    cell_b = Board.get(board, bx, by)
+
+    cell_a_key = [:next, :prev] |> Enum.find(fn atom ->
+      cell_a[atom] == :to_replace
+    end)
+    cell_b_key = [:next, :prev] |> Enum.find(fn atom ->
+      cell_b[atom] == :to_replace
+    end)
+
+    board
+    |> Board.put(ax, ay, Keyword.replace(cell_a, cell_a_key, pb) ++ [a: 1])
+    |> Board.put(bx, by, Keyword.replace(cell_b, cell_b_key, pa) ++ [a: 1])
+  end
+
+  defp disconnect_edge(board, pa = {ax, ay}, pb = {bx, by}) do
     cell_a = Board.get(board, ax, ay)
     cell_b = Board.get(board, bx, by)
 
     cond do
-      cell_a[:next] == :to_replace and cell_b[:prev] == :to_replace ->
+      cell_a[:next] == pb and cell_b[:prev] == pa ->
         board
-        |> Board.put(ax, ay, Keyword.replace(cell_a, :next, pb))
-        |> Board.put(bx, by, Keyword.replace(cell_b, :prev, pa))
-      cell_a[:prev] == :to_replace and cell_b[:next] == :to_replace ->
+        |> Board.put(ax, ay, Keyword.replace(cell_a, :next, :to_replace))
+        |> Board.put(bx, by, Keyword.replace(cell_b, :prev, :to_replace))
+      cell_a[:prev] == pb and cell_b[:next] == pa ->
         board
-        |> Board.put(ax, ay, Keyword.replace(cell_a, :prev, pb))
-        |> Board.put(bx, by, Keyword.replace(cell_b, :next, pa))
+        |> Board.put(ax, ay, Keyword.replace(cell_a, :prev, :to_replace))
+        |> Board.put(bx, by, Keyword.replace(cell_b, :next, :to_replace))
       true ->
         raise ArgumentError, inspect([
           cell_a: cell_a, cell_b: cell_b, board: board
-        ])
+        ], limit: :infinity)
     end
   end
 
-  defp join_boards(boards = [tl_board, tr_board, bl_board, br_board]) do
+  defp join_boards([tl_board, tr_board, bl_board, br_board]) do
     empty_joined_board = %Board{
       width: tl_board.width + tr_board.width,
       height: tl_board.height + bl_board.height,
     }
 
-    w1 = tl_board.width
-    h1 = tl_board.height
-
-    make_translator = fn ({dx, dy}) ->
+    make_translator = fn (dx, dy) ->
       fn {{x, y}, cell} ->
-        do_translate = fn {xx, yy} -> {xx + dx, y + dy} end
+        do_translate = fn {xx, yy} -> {xx + dx, yy + dy} end
         {
           do_translate.({x, y}),
           cell
@@ -129,7 +141,7 @@ defmodule Part3KTSolver do
     )
   end
 
-  @doc "Points used for joining, clockwise order"
+  # "Points used for joining, clockwise order"
   defp make_anchor_points(tl_board) do
     w1 = tl_board.width
     h1 = tl_board.height
@@ -147,46 +159,6 @@ defmodule Part3KTSolver do
       {w1 - 2, h1 + 2},
       {w1 - 1, h1},
     ]
-  end
-
-  defp disconnect_point(board, p = {x, y}, anchor_points) do
-    cell = Board.get(board, x, y)
-    {next_px, next_py} = next_p = cell[:next]
-    {prev_px, prev_py} = prev_p = cell[:prev]
-
-    match? = fn (point) ->
-      Enum.any?(
-        anchor_points,
-        fn p -> point == p end
-      )
-    end
-
-    cond do
-      match?.(next_p)->
-        next_cell =
-          board
-          |> Board.get(next_px, next_py)
-          |> Keyword.replace(:prev, :to_replace)
-        updated_cell = Keyword.replace(cell, :next, :to_replace)
-
-        board
-        |> Board.put(updated_cell, x, y)
-        |> Board.put(next_cell, next_px, next_py)
-
-      match?.(prev_p)->
-        prev_cell =
-          board
-          |> Board.get(prev_px, prev_py)
-          |> Keyword.replace(:next, :to_replace)
-        updated_cell = Keyword.replace(cell, :prev, :to_replace)
-
-        board
-        |> Board.put(x, y, updated_cell)
-        |> Board.put(prev_px, prev_py, prev_cell)
-
-      true ->
-        raise CaseClauseError, "Anchor points must be wrong"
-    end
   end
 
   def split_board(width, height)
@@ -229,4 +201,17 @@ defmodule Part3KTSolver do
       {w1, h1, w2, h2},
     ]
   end
+
+  def pair_list(list) when is_list(list) do
+    list
+    |> Enum.reduce([], fn
+      item, [{existing_item} | rest] ->
+        [{existing_item, item} | rest]
+      item, pairs when is_list(pairs) ->
+        # pairs is empty at the start
+        [{item} | pairs]
+    end)
+    |> Enum.reverse
+  end
+
 end

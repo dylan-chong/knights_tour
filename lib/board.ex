@@ -26,7 +26,7 @@ defmodule Board do
   end
 
   def all_points_to_cells(board) do
-    Map.to_list(board.map)
+    board.map
   end
 
   def to_string(
