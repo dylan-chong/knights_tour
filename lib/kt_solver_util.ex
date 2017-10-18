@@ -88,7 +88,7 @@ defmodule KTSolverUtil do
       cell =
         current_board
         |> Board.get(x, y)
-        |> Keyword.pop(:num)
+        |> Keyword.delete(:num)
       Board.put(current_board, x, y, cell)
     end)
   end

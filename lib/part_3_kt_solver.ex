@@ -76,7 +76,7 @@ defmodule Part3KTSolver do
         |> Board.put(ax, ay, Keyword.replace(cell_a, :prev, pb))
         |> Board.put(bx, by, Keyword.replace(cell_b, :next, pa))
       true ->
-        raise AssertionError, inspect([
+        raise ArgumentError, inspect([
           cell_a: cell_a, cell_b: cell_b, board: board
         ])
     end
@@ -157,9 +157,7 @@ defmodule Part3KTSolver do
     match? = fn (point) ->
       Enum.any?(
         anchor_points,
-        fn ([board_index: _, point: point]) ->
-          point == p
-        end
+        fn p -> point == p end
       )
     end
 
@@ -183,8 +181,8 @@ defmodule Part3KTSolver do
         updated_cell = Keyword.replace(cell, :prev, :to_replace)
 
         board
-        |> Board.put(updated_cell, x, y)
-        |> Board.put(prev_cell, prev_px, prev_py)
+        |> Board.put(x, y, updated_cell)
+        |> Board.put(prev_px, prev_py, prev_cell)
 
       true ->
         raise CaseClauseError, "Anchor points must be wrong"

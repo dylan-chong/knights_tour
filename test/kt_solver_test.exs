@@ -129,7 +129,7 @@ defmodule KTSolverTest do
       |> Part3KTSolver.solve()
 
     assert KTSolverUtil.is_valid_tour(board, points)
-  end, do: Solvers.part_3_boards
+  end, do: Solvers.part_3_boards()
 
   test "can_finish_tour returns false when there is no path back" do
     points = [
