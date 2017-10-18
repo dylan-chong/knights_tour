@@ -5,17 +5,25 @@ defmodule HardCodedBoards do
   end
 
   def for_size(size) when is_bitstring(size) do
-    points = all[size]
+    [w_string, h_string] = String.split(size, "x")
+    points = all()[size]
+        || (all()["#{h_string}x#{w_string}"] |> rotate)
+
     if !points do
-      :not_found
+      "not_found for size #{size}"
     else
       if List.last(points) == List.first(points) do
-        [first | rest] = points
+        [_first | rest] = points
         rest
       else
         points
       end
     end
+  end
+
+  def rotate(nil), do: nil
+  def rotate(points) do
+    Enum.map(points, fn {x, y} -> {y, x} end)
   end
 
   def all do

@@ -18,7 +18,9 @@ defmodule Part3KTSolver do
   end
 
   defp do_solve(%Board{width: width, height: height})
-      when width <= 10 and height <= 12 do
+      when width <= 12
+      and height <= 12
+      and not ((width == 12) and (height == 12)) do
     {width, height}
     |> HardCodedBoards.for_size
     |> KTSolverUtil.points_to_linked_board
@@ -200,12 +202,10 @@ defmodule Part3KTSolver do
   end
 
   def split_board(width, height)
-      when width > height
-      or Integer.is_odd(width)
+      when Integer.is_odd(width)
       or Integer.is_odd(height)
-      or width < 10
-      or height < 12
-      or height - width not in [0, 2],
+      or (width < 12 and height < 12)
+      or height - width not in [-2, 0, 2],
     do: raise ArgumentError,
       "Invalid board of w: #{width}, h: #{height}"
   def split_board(width, height)
@@ -221,8 +221,8 @@ defmodule Part3KTSolver do
 
     four_sub_boards(
       half_width - 1,
-      half_width - 1,
-      half_height + 1,
+      half_width + 1,
+      half_height - 1,
       half_height + 1
     )
   end

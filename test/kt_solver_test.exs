@@ -19,6 +19,8 @@ defmodule Solvers do
       {14, 14},
       {14, 16},
       {16, 16},
+      {28, 28},
+      {54, 54},
       {100, 100},
     ]
     |> Enum.map(&size_to_description/1)
@@ -243,7 +245,7 @@ defmodule KTSolverTest do
 
   test "split_board returns valid split for 50x50" do
     expected_sub_boards =
-      Part3KTSolver.four_sub_boards(24, 24, 26, 26)
+      Part3KTSolver.four_sub_boards(24, 26, 24, 26)
       |> MapSet.new
     sub_boards =
       Part3KTSolver.split_board(50, 50)
@@ -253,10 +255,30 @@ defmodule KTSolverTest do
 
   test "split_board returns valid split for 14x14" do
     expected_sub_boards =
-      Part3KTSolver.four_sub_boards(6, 6, 8, 8)
+      Part3KTSolver.four_sub_boards(6, 8, 6, 8)
       |> MapSet.new
     sub_boards =
       Part3KTSolver.split_board(14, 14)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+  test "split_board returns valid split for 28x28" do
+    expected_sub_boards =
+      Part3KTSolver.four_sub_boards(14, 14, 14, 14)
+      |> MapSet.new
+    sub_boards =
+      Part3KTSolver.split_board(28, 28)
+      |> MapSet.new
+    assert expected_sub_boards == sub_boards
+  end
+
+  test "split_board returns valid split for 54x54" do
+    expected_sub_boards =
+      Part3KTSolver.four_sub_boards(26, 28, 26, 28)
+      |> MapSet.new
+    sub_boards =
+      Part3KTSolver.split_board(54, 54)
       |> MapSet.new
     assert expected_sub_boards == sub_boards
   end

@@ -3,7 +3,7 @@ defmodule Timer do
   def bench_increasing_square(
     solver,
     min \\ 6,
-    max \\ 60,
+    max \\ 150,
     interval \\ 6
   ) do
     (
@@ -15,7 +15,6 @@ defmodule Timer do
     |> Enum.map(fn size ->
       r = bench_square(solver, size, false)
       IO.puts "Finished for size: #{size}, millis: #{elem(r, 0)}"
-      r
     end)
   end
 

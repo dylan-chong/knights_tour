@@ -6,9 +6,17 @@ defmodule HardCodedBoardsTest do
     assert_valid_size({6, 6})
   end
 
-  test "for_size is valid for all sizes" do
+  test "for_size is valid for all non-rotated sizes" do
     HardCodedBoards.all
     |> Map.keys
+    |> Enum.each(&assert_valid_size/1)
+  end
+
+  test "for_size is valid for all rotated sizes" do
+    HardCodedBoards.all
+    |> Map.keys
+    |> Enum.map(fn wxh -> String.split(wxh, "x") end)
+    |> Enum.map(fn [w, h] -> "#{h}x#{w}" end)
     |> Enum.each(&assert_valid_size/1)
   end
 
