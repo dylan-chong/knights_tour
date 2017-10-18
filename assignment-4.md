@@ -126,6 +126,9 @@ This algorithm was able to solve these boards:
 It takes at least many hours to complete any other board sizes (e.g. 6x6) - I
 have never been able to solve any board other than the ones above.
 
+Because this algorithm can only solve 3 boards (in a reasonable amount of
+time), there is no point having a graph here.
+
 # Part 2
 
 Part 2 is implemented in file `lib/part_2_kt_solver.ex` - see function
@@ -224,26 +227,28 @@ This algorithm was able to complete square boards (it was many order of
 magnitudes faster than my previous algorithm).
 
     |------------|------------------------------|------------------------------|
-    | Board Size | Part1KTSolver Duration (ms)  | Part2KTSolver Duration (ms)  |
-    |------------|------------------------------|------------------------------|
-    | 6 x 6      | Some very long, unknown time | 3                            |
-    | 12 x 12    | Some very long, unknown time | 25                           |
-    | 18 x 18    | Some very long, unknown time | 133                          |
-    | 24 x 24    | Some very long, unknown time | 322                          |
-    | 30 x 30    | Some very long, unknown time | 913                          |
-    | 36 x 36    | Some very long, unknown time | 1864                         |
+    | Board Size | Part1KTSolver Duration (ms)  |  Part2KTSolver Duration (ms) |
+    |------------|------------------------------|-----------------------------:|
+    | 6 x 6      | Some very long, unknown time |                            3 |
+    | 12 x 12    | Some very long, unknown time |                           25 |
+    | 18 x 18    | Some very long, unknown time |                          133 |
+    | 24 x 24    | Some very long, unknown time |                          322 |
+    | 30 x 30    | Some very long, unknown time |                          913 |
+    | 36 x 36    | Some very long, unknown time |                         1864 |
     | 42 x 42    | Some very long, unknown time | Some very long, unknown time |
-    | 48 x 48    | Some very long, unknown time | 6124                         |
-    | 54 x 54    | Some very long, unknown time | 11201                        |
+    | 48 x 48    | Some very long, unknown time |                         6124 |
+    | 54 x 54    | Some very long, unknown time |                        11201 |
     | 60 x 60    | Some very long, unknown time | Some very long, unknown time |
-    | 66 x 66    | Some very long, unknown time | 25648                        |
-    | 72 x 72    | Some very long, unknown time | 37407                        |
-    | 78 x 78    | Some very long, unknown time | 73297                        |
-    | 84 x 84    | Some very long, unknown time | 73443                        |
-    | 90 x 90    | Some very long, unknown time | 103175                       |
-    | 96 x 96    | Some very long, unknown time | 204998                       |
+    | 66 x 66    | Some very long, unknown time |                        25648 |
+    | 72 x 72    | Some very long, unknown time |                        37407 |
+    | 78 x 78    | Some very long, unknown time |                        73297 |
+    | 84 x 84    | Some very long, unknown time |                        73443 |
+    | 90 x 90    | Some very long, unknown time |                       103175 |
+    | 96 x 96    | Some very long, unknown time |                       204998 |
     |------------|------------------------------|------------------------------|
 
+See page 1 of `./assignment-4-graphs.pdf` for a graphical chart of the above
+table.
 
 It's hard to find a metric to precisely compare Part1KTSolver with
 Part2KTSolver. Part1KTSolver is not able to complete square boards. Both
@@ -256,6 +261,74 @@ Oddly, there were 2 square board that the algorithm could not solve in a few
 hours - n=42 and n=60. I'm not sure why these boards in particular were hard to
 solve.
 
-**TODO graphs for above (when doing part 3)**
-
 # Part 3
+
+NOTE: The report part of this assignment has been dispersed throught all 3
+parts of this document.
+
+Part 3 is implemented in file `lib/part_3_kt_solver.ex` - see function `solve`.
+
+To run an example, open up the interactive console:
+
+    iex -S mix test
+
+Then run the algorithm on the size 6x6 (for example):
+
+    Timer.bench_size(Part3KTSolver, 3, 10, true)
+
+NOTE: Part3KTSolver does not work on boards smaller than 6x6, and only works on
+square boards with an even widths and heights.
+
+The Parberry algorithm, in essesence, divides the board into four quadrants
+(each of a even width and height), recursively solving them, and using a
+hard-coded set of structured boards as base cases. The sub-boards are then
+joined by taking advantage of certain edges in structred boards. The algorithm
+I implemented follows this exactly.
+
+## Benchmarks
+
+The Parberry algorithm is very fast, as expected, as it does not do any
+extremely expensive operation like the graph algorithms do (in part 1 and part
+2).
+
+However, my implementation still ran in polynomial time, likely because of the
+immutability in Elixir. Let's say I have the 4 sub-solutions. My implementation
+needs to copy these to a new board (`n^2` points to copy), but because you can
+only add one item to the board at a time, and each board is immutable, `n^2`
+copies of the board are made (in the worst case, assuming that the compiler or
+Elixir/Erlang runtime does not optimise this). This leads to a `n^4`
+complexity.
+
+    |--------------|--------------------------------|-------------------------------|
+    | Board Size   |    Part2KTSolver Duration (ms) |   Part3KTSolver Duration (ms) |
+    |--------------|-------------------------------:|------------------------------:|
+    | 6 x 6        |                              3 |                             0 |
+    | 12 x 12      |                             25 |                             1 |
+    | 18 x 18      |                            133 |                             2 |
+    | 24 x 24      |                            322 |                             7 |
+    | 30 x 30      |                            913 |                            12 |
+    | 36 x 36      |                           1864 |                            21 |
+    | 42 x 42      |   Some very long, unknown time |                            39 |
+    | 48 x 48      |                           6124 |                            48 |
+    | 54 x 54      |                          11201 |                            61 |
+    | 60 x 60      |   Some very long, unknown time |                            78 |
+    | 66 x 66      |                          25648 |                            98 |
+    | 72 x 72      |                          37407 |                           109 |
+    | 78 x 78      |                          73297 |                           131 |
+    | 84 x 84      |                          73443 |                           167 |
+    | 90 x 90      |                         103175 |                           209 |
+    | 96 x 96      |                         204998 |                           271 |
+    | 102 x 102    |   Some very long, unknown time |                           282 |
+    | 108 x 108    |   Some very long, unknown time |                           305 |
+    | 114 x 114    |   Some very long, unknown time |                           339 |
+    | 120 x 120    |   Some very long, unknown time |                           367 |
+    | 126 x 126    |   Some very long, unknown time |                           410 |
+    | 132 x 132    |   Some very long, unknown time |                           456 |
+    | 138 x 138    |   Some very long, unknown time |                           499 |
+    | 144 x 144    |   Some very long, unknown time |                           527 |
+    | ------------ | ------------------------------ | ----------------------------- |
+
+See page 2 and page 3 of `./assignment-4-graphs.pdf` for a graphical chart of the above
+table. Page 2 contains just the data for Part3KTSolver, and page 3 contains a
+comparison of Part2KTSolver and Part3KTSolver on a log scale. Part3KTSolver
+has a massive improvement over Part2KTSolver.
