@@ -63,9 +63,6 @@ defmodule Part3KTSolver do
   end
 
   defp join_edge(board, pa = {ax, ay}, pb = {bx, by}) do
-    if {5, 4} in [pa, pb] do
-      IO.puts ""
-    end
     cell_a = Board.get(board, ax, ay)
     cell_b = Board.get(board, bx, by)
 
