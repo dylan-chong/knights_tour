@@ -7,7 +7,7 @@ date: \today{}
 
 # Installation
 
-Firstly, install Elixir [from here](https://elixir-lang.org/install.html).
+Firstly, install Elixir from here: https://elixir-lang.org/install.html .
 
 Then unzip the `project.zip` and `cd` into it. From now on I will assume you
 are in the unzipped project folder.
