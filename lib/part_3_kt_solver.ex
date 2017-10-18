@@ -45,11 +45,41 @@ defmodule Part3KTSolver do
       anchor_points,
       joined_board,
       fn ({x, y}, board) ->
-        disconnect_point(board, x, y, anchor_points)
+        disconnect_point(board, {x, y}, anchor_points)
       end
     )
 
-    # TODO NEXT get rejoin working
+    reanchor_points(disconnected_joined_board, anchor_points)
+  end
+
+  defp reanchor_points(board, anchor_points = [first_anchor | _]) do
+    anchor_points
+    |> List.delete(first_anchor)
+    |> Kernel.++(first_anchor)
+    |> Enum.unzip
+    |> Enum.reduce(board, fn {point_a, point_b}, current_board ->
+      join_end_points(current_board, point_a, point_b)
+    end)
+  end
+
+  defp join_end_points(board, pa = {ax, ay}, pb = {bx, by}) do
+    cell_a = Board.get(board, ax, ay)
+    cell_b = Board.get(board, bx, by)
+
+    cond do
+      cell_a[:next] == :to_replace and cell_b[:prev] == :to_replace ->
+        board
+        |> Board.put(ax, ay, Keyword.replace(cell_a, :next, pb))
+        |> Board.put(bx, by, Keyword.replace(cell_b, :prev, pa))
+      cell_a[:prev] == :to_replace and cell_b[:next] == :to_replace ->
+        board
+        |> Board.put(ax, ay, Keyword.replace(cell_a, :prev, pb))
+        |> Board.put(bx, by, Keyword.replace(cell_b, :next, pa))
+      true ->
+        raise AssertionError, inspect([
+          cell_a: cell_a, cell_b: cell_b, board: board
+        ])
+    end
   end
 
   defp join_boards(boards = [tl_board, tr_board, bl_board, br_board]) do
@@ -65,10 +95,10 @@ defmodule Part3KTSolver do
       fn {{x, y}, cell} ->
         do_translate = fn {xx, yy} -> {xx + dx, y + dy} end
         {
-          do_translate({x, y}),
+          do_translate.({x, y}),
           cell
-          |> Keyword.replace(:prev, do_translate(cell[:prev]))
-          |> Keyword.replace(:next, do_translate(cell[:next]))
+          |> Keyword.replace(:prev, do_translate.(cell[:prev]))
+          |> Keyword.replace(:next, do_translate.(cell[:next]))
         }
       end
     end
@@ -80,18 +110,18 @@ defmodule Part3KTSolver do
 
       tr_board
       |> Board.all_points_to_cells
-      |> Stream.map(make_translator(x + tl_board.width, y)),
+      |> Stream.map(make_translator.(tl_board.width, 0)),
 
       br_board
       |> Board.all_points_to_cells
-      |> Stream.map(make_translator(x + tl_board.width, y + tl_board.height)),
+      |> Stream.map(make_translator.(tl_board.width, tl_board.height)),
 
       bl_board
       |> Board.all_points_to_cells
-      |> Stream.map(make_translator(x, y + tl_board.height)),
+      |> Stream.map(make_translator.(0, tl_board.height)),
     ]
     |> Stream.flat_map(&(&1))
-    |> Enum.reduce(
+    |> Enum.reduce( # TODO optimise?: replace with make map from list
       empty_joined_board,
       fn ({{x, y}, cell}, board) ->
         Board.put(board, x, y, cell)
@@ -134,7 +164,7 @@ defmodule Part3KTSolver do
     end
 
     cond do
-      match?(next_p)->
+      match?.(next_p)->
         next_cell =
           board
           |> Board.get(next_px, next_py)
@@ -145,7 +175,7 @@ defmodule Part3KTSolver do
         |> Board.put(updated_cell, x, y)
         |> Board.put(next_cell, next_px, next_py)
 
-      match?(prev_p)->
+      match?.(prev_p)->
         prev_cell =
           board
           |> Board.get(prev_px, prev_py)
