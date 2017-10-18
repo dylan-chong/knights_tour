@@ -12,9 +12,22 @@ defmodule Part3KTSolver do
   require Integer
 
   def solve(board = %Board{}) do
-    board
-    |> do_solve
-    |> KTSolverUtil.linked_board_with_nums
+    [board: solved_board, points: solved_points] =
+      board
+      |> do_solve
+      |> KTSolverUtil.linked_board_with_nums
+
+    solved_num_only_board =
+      solved_board
+      |> Board.all_points_to_cells
+      |> Enum.map(fn {p = {_, _}, cell} ->
+        {p, cell |> Keyword.fetch!(:num)}
+      end)
+      |> Enum.reduce(solved_board, fn {{x, y}, num}, b ->
+        Board.put(b, x, y, num)
+      end)
+
+    [board: solved_num_only_board, points: solved_points]
   end
 
   defp do_solve(%Board{width: width, height: height})
@@ -34,9 +47,7 @@ defmodule Part3KTSolver do
 
   defp rectangle_to_solved_board(r = %Rectangle{}) do
     %Board{width: r.w, height: r.h}
-    |> Part3KTSolver.solve
-    |> Keyword.fetch!(:board)
-    |> KTSolverUtil.remove_nums
+    |> do_solve
   end
 
   defp join_and_connect_boards(boards) do
